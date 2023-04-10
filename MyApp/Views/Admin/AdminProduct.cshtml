@@ -1,0 +1,322 @@
+﻿@model AdminViewModel
+@{
+    ViewData["Title"] = "Product Editor";
+}
+<div class="container">
+    <a href="/admin">
+        <div class="btn btn-outline-primary btn-rounded fw-bold w-20 my-3 mx-1">
+            Dashboard
+        </div>
+    </a>
+
+    <div class="mb-5 py-4">
+        <h5 class="text-center mb-4">Product Editor</h5>
+        <div class="row d-flex justify-content-center">
+            <div class="col-xl-5 col-lg-6 col-md-8">
+                <div class="card card-body rounded-5 p-4">
+                    @*  Nav  *@
+                    <ul class="nav nav-pills nav-justified text-center mb-3">
+                        <li class="nav-item">
+                            <a class="nav-link active border border-secondary border-opacity-25 text-primary fw-bold"
+                               data-mdb-toggle="pill" href="#existing-pill" v-on:click="resetVars()">
+                               Existing Product
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link border border-secondary border-opacity-25 text-primary fw-bold"
+                               data-mdb-toggle="pill" href="#new-pill" v-on:click="resetVars()">
+                               New Product
+                            </a>
+                        </li>
+                    </ul>
+                    @*  Content  *@
+                    <div class="tab-content">
+                        @*  Current Product  *@
+                        <div class="tab-pane active" id="existing-pill">
+                            @*  successMsg  *@
+                            <div class="alert alert-dismissible fade show" role="alert" data-mdb-color="success" v-if="successMsg != null">
+                                <i v-text="successMsg"></i>
+                                <button type="button" class="btn-close" v-on:click="successMsg = null"></button>
+                            </div>
+                            @*  errMsg  *@
+                            <div class="alert" role="alert" data-mdb-color="danger" v-if="errMsg != null">
+                                <i v-text="errMsg"></i>
+                            </div>
+                            <form>
+                                @*  Product Id  *@
+                                <div class="mb-3 row">
+                                    <label>Product ID:</label>
+                                    <span class="col-8 col-sm-9">
+                                        <input class="form-control" type="number" v-model="prod.productId" />
+                                    </span>
+                                    @*  Find  *@
+                                    <span class="d-inline-block col-4 col-sm-3 text-nowrap">
+                                        <button class="btn btn-primary btn-rounded w-75 p-2" type="button" v-on:click="find(prod.productId)">
+                                            Find
+                                        </button>
+                                    </span>
+                                </div>
+                                @*  inputError Message  *@
+                                <div class="alert" role="alert" data-mdb-color="danger" v-if="inputErrors[0] != null">
+                                    <div class="alert-heading" v-for="(input, i) in inputErrors">
+                                        <b v-if="i == 0" v-text="input"></b>
+                                        <div v-if="i > 0" v-text="input"></div>
+                                    </div>
+                                </div>
+                                @*  Product Name  *@
+                                <div class="mb-3 ">
+                                    <label>Product Name:</label>
+                                    <input class="form-control" type="text" v-model="prod.name" maxlength="45" />
+                                </div>
+                                @*  Image Url  *@
+                                <div class="mb-3">
+                                    <label>Image Url:</label>
+                                    <input class="form-control" type="text" v-model="prod.imgUrl" maxlength="2000" />
+                                </div>
+                                @*  Cost  *@
+                                <div class="mb-3">
+                                    <label>Cost:</label>
+                                    <input class="form-control" type="number" v-model="prod.cost" />
+                                </div>
+                                @*  Price  *@
+                                <div class="mb-3">
+                                    <label>Price:</label>
+                                    <input class="form-control" type="number" v-model="prod.price" />
+                                </div>
+                                @*  Description  *@
+                                <div class="mb-3">
+                                    <label>Description:</label>
+                                    <textarea class="form-control" type="text" v-model="prod.descr" maxlength="1000"></textarea>
+                                </div>
+                                @*  Status  *@
+                                <div class="row border-bottom pb-2 mb-3">
+                                    <div class="col-8">
+                                        Product Status:
+                                        <span class="fw-bold text-success" v-if="prod.status=='active'">
+                                            active
+                                        </span>
+                                        <span class="fw-bold text-dark" v-if="prod.status=='inactive'">
+                                            inactive
+                                        </span>
+                                    </div>
+                                    <div class="col-4 d-flex justify-content-end text-nowrap text-center" v-if="prod.status=='active'">
+                                        <button class="btn btn-outline-dark fw-bold px-3" type="button" v-on:click="prod.status='inactive'">
+                                            Deactivate
+                                        </button>
+                                    </div>
+                                    <div class="col-4 d-flex justify-content-end text-nowrap text-center" v-if="prod.status=='inactive'">
+                                        <button class="btn btn-outline-success fw-bold px-3" type="button" v-on:click="prod.status='active'">
+                                            Activate
+                                        </button>
+                                    </div>
+                                    <div class="pt-4 text-muted" v-if="prod.status">
+                                        Status changes must be saved to take effect
+                                    </div>
+                                </div>
+                                @*  Buttons  *@
+                                <div class="text-center">
+                                    <button class="btn btn-primary btn-rounded w-20 my-3 mx-1" type="button" v-on:click="update(prod)">
+                                        Save
+                                    </button>
+                                    <button class="btn btn-secondary btn-rounded w-20 my-3 mx-1" type="button" v-on:click="resetVars()">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                        @*  New Product  *@
+                        <div class="tab-pane" id="new-pill">
+                            @*  successMsg  *@
+                            <div class="alert alert-dismissible fade show" role="alert" data-mdb-color="success" v-if="successMsg != null">
+                                <i v-text="successMsg"></i>
+                                <button type="button" class="btn-close" v-on:click="successMsg = null"></button>
+                            </div>
+                            @*  errMsg  *@
+                            <div class="alert" role="alert" data-mdb-color="danger" v-if="errMsg != null">
+                                <b><i v-text="errMsg"></i></b>
+                            </div>
+                            @*  inputError Message  *@
+                            <div class="alert" role="alert" data-mdb-color="danger" v-if="inputErrors[0] != null">
+                                <div class="alert-heading" v-for="(input, i) in inputErrors">
+                                    <b v-if="i == 0" v-text="input"></b>
+                                    <div v-if="i > 0" v-text="input"></div>
+                                </div>
+                            </div>
+                            <form>
+                                @*  Product Name  *@
+                                <div class="mb-3">
+                                    <label>Product Name:</label>
+                                    <input class="form-control" type="text" v-model="prod.name" maxlength="45" />
+                                </div>
+                                @*  Image Url  *@
+                                <div class="mb-3">
+                                    <label>Image Url:</label>
+                                    <input class="form-control" type="text" v-model="prod.imgUrl" maxlength="2000" />
+                                </div>
+                                @*  Cost  *@
+                                <div class="mb-3">
+                                    <label>Cost:</label>
+                                    <input class="form-control" type="number" v-model="prod.cost" />
+                                </div>
+                                @*  Price  *@
+                                <div class="mb-3">
+                                    <label>Price:</label>
+                                    <input class="form-control" type="number" v-model="prod.price" />
+                                </div>
+                                @*  Description  *@
+                                <div class="mb-3">
+                                    <label>Description:</label>
+                                    <textarea class="form-control" type="text" v-model="prod.descr" maxlength="1000"></textarea>
+                                </div>
+                                @*  Status disclaimer  *@
+                                <div class="pb-2 mb-3 text-muted border-bottom">
+                                    New products are added with <span class="text-success"> active </span> status
+                                </div>
+                                @*  Buttons  *@
+                                <div class="text-center">
+                                    <button class="btn btn-primary btn-rounded w-20 my-3 mx-1" type="button" v-on:click="add(prod)">
+                                        Add
+                                    </button>
+                                    <button class="btn btn-secondary btn-rounded w-20 my-3 mx-1" type="button" v-on:click="resetVars()">
+                                        Cancel
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                    @*  Content  *@
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <span id="prodJson" class="d-none" data-json='@Model.Json'></span>
+</div>
+
+
+@section Scripts {
+    <script>
+        var pageMixin = {
+            data: function () {
+                return {
+                    prod: null,
+                    inputErrors: [],
+                    errMsg: null,
+                    successMsg: null
+                }
+            },
+            methods: {
+                find: function (productId) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/product/ajax-find",
+                        dataType: "json",
+                        data: { "productId": productId },
+                        success: function (result) {
+                            app.resetVars();
+                            app.prod = result;
+                        },
+                        error: function (req, status, error) {
+                            if (req.responseJSON.errMsg != "") {
+                                app.errMsg = req.responseJSON.errMsg;
+                                console.log(status);
+                            } else {
+                                app.errMsg = null;
+                            }
+                        }
+                    }); 
+                },
+                add: function (prod) {
+                    $.ajax({
+                        type: "POST",
+                        type: "POST",
+                        url: "/admin/product/ajax-add",
+                        dataType: "json",
+                        data: prod,
+                        success: function (result) {
+                            app.resetVars();
+                            app.successMsg = result.msg;
+                        },
+                        error: function (req, status, error) {
+                            if (req.responseJSON.inputErrors != undefined) {
+                                app.inputErrors = req.responseJSON.inputErrors;
+                            }
+                            if (req.responseJSON.errMsg != "") {
+                                app.errMsg = req.responseJSON.errMsg;
+                                console.log(status);
+                            } else {
+                                app.errMsg = null;
+                            }
+                        }
+                    });
+                },
+                update: function (prod) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/admin/product/ajax-update",
+                        dataType: "json",
+                        data: prod,
+                        success: function (result) {
+                            app.resetVars();
+                            app.successMsg = result.msg;
+                        },
+                        error: function (req, status, error) {
+                            if (req.responseJSON.inputErrors != undefined) {
+                                app.inputErrors = req.responseJSON.inputErrors;
+                            }
+                            if (req.responseJSON.errMsg != "") {
+                                app.errMsg = req.responseJSON.errMsg;
+                                console.log(status);
+                            } else {
+                                app.errMsg = null;
+                            }
+                        }
+                    });
+                },
+                resetProd: function () {
+                    Object.assign(this.$data.prod, {
+                        productId: "",
+                        name: "",
+                        imgUrl: "",
+                        cost: "",
+                        price: "",
+                        descr: "",
+                        status: ""
+                    });
+                },
+                resetVars: function () {
+                    app.resetProd();
+                    app.inputErrors = [];
+                    app.errMsg = null;
+                    app.successMsg = null;
+                }
+            },
+            created() {
+                if ($('#prodJson').attr('data-json') != "") {
+                    var jProd = JSON.parse($('#prodJson').attr('data-json'));
+                    this.prod = {
+                        productId: jProd.ProductId,
+                        name: jProd.Name,
+                        imgUrl: jProd.ImgUrl,
+                        cost: jProd.Cost,
+                        price: jProd.Price,
+                        descr: jProd.Descr,
+                        status: jProd.Status
+                    }
+                } else {
+                    this.prod = {
+                        productId: "",
+                        name: "",
+                        imgUrl: "",
+                        cost: "",
+                        price: "",
+                        descr: "",
+                        status: ""
+                    }
+                }
+            }
+        };
+
+        mixinArray.push(pageMixin);
+    </script>
+}

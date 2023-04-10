@@ -1,0 +1,273 @@
+﻿@model OrderViewModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+<div class="container">
+    <div class="my-3" v-if="order.Lines[0] != null">
+        <div class="row">
+            <form id="payment-form" method="POST" action="/checkout/ajax-ins-order" class="col-lg-6 pe-lg-4 mb-5 mb-lg-0">
+                @*  Form Error Message  *@
+                <div id="submit" class="alert" data-mdb-color="danger" v-if="order.InputErrors[0]">
+                    <div class="alert-heading" v-for="(input, i) in order.InputErrors">
+                        <b v-if="i == 0" v-text="input"></b>
+                        <div v-if="i > 0" v-text="input"></div>
+                    </div>
+                </div>
+                @*  Delivery Address  *@
+                <h5 class="mb-4">Delivery Address</h5>
+                <div class="mb-4 border-bottom">
+                    <div>
+                        <div class="mb-2 small muted">
+                            All fields marked with <r>*</r> are required
+                        </div>
+                        @*  First -- Last  *@
+                        <div class="row">
+                            <div class="col-6">
+                                <div class="mb-4">
+                                    <label class="form-label">First name <r>*</r></label>
+                                    <input id="first" type="text" class="form-control" maxlength="15" v-model="order.First" />
+                                </div>
+                            </div>
+                            <div class="col-6">
+                                <div class="mb-4">
+                                    <label class="form-label">Last name <r>*</r></label>
+                                    <input id="last" type="text" class="form-control" maxlength="20" v-model="order.Last" />
+                                </div>
+                            </div>
+                        </div>
+                        @*  Adr2 L1 -- Adr L2  *@
+                        <div class="row">
+                            <div class="col-sm-8 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Street Address <r>*</r></label>
+                                    <input id="adrL1" type="text" class="form-control" maxlength="35" v-model="order.AdrL1" />
+                                </div>
+                            </div>
+                            <div class="col-sm-4 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Apt, suite, etc</label>
+                                    <input id="adrL2" type="text" class="form-control" maxlength="35" v-model="order.AdrL2" />
+                                </div>
+                            </div>
+                        </div>
+                        @*  City -- State -- Zip  *@
+                        <div class="row">
+                            <div class="col-sm-5 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">City <r>*</r></label>
+                                    <input id="city" type="text" class="form-control" maxlength="25" v-model="order.City" />
+                                </div>
+                            </div>
+                            <div class="col-sm-3 col-6">
+                                <div class="mb-4">
+                                    <label class="form-label">State <r>*</r></label>
+                                    <input id="state" type="text" class="form-control" maxlength="2" v-model="order.State" />
+                                </div>
+                            </div>
+                            <div class="col-sm-4 col-6">
+                                <div class="mb-4">
+                                    <label class="form-label">Zip <r>*</r></label>
+                                    <input id="zip" type="text" class="form-control" maxlength="5" v-model="order.Zip" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mb-4 border-bottom">
+                    @*  Contact Info  *@
+                    <h5 class="mb-4">Contact Info</h5>
+                    <div>
+                        @*  Email -- Phone  *@
+                        <div class="row">
+                            <div class="col-sm-6 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Email <r>*<r /></label>
+                                    <input id="email" type="text" class="form-control" maxlength="45" v-model="order.Email" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Phone</label>
+                                    <input id="phone" type="tel" class="form-control" maxlength="20" v-model="order.Phone" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @*  Shipping Type Selection  *@
+                <div class="mb-4 border-bottom">
+                    <div class="form-check mb-4">
+                        <input class="form-check-input" type="radio" name="freeShipping" checked />
+                        <label class="form-check-label">
+                            <span>
+                                <p class="mb-0">Standard home delivery</p>
+                                <p class="text-muted mb-0">Free • Between 3 and 5 business days</p>
+                            </span>
+                        </label>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="radio" name="expressShipping" />
+                        <label class="form-check-label">
+                            <span>
+                                <p class="mb-0">Express home delivery</p>
+                                <p class="text-muted mb-0">$10 • Between 1 and 2 business days</p>
+                            </span>
+                        </label>
+                    </div>
+                </div>
+
+                @*  Braintree drop-in UI  *@
+                <div class="">
+                    <div id="bt-dropin"></div>
+                </div>
+
+                @*  Order Summary  *@
+                <div class="d-flex justify-content-between">
+                    <p class="mb-3">Merchandise</p>
+                    <p class="mb-3" v-text="toCurrency(order.Subtotal)"></p>
+                </div>
+                <div class="d-flex justify-content-between border-bottom pb-2 mb-4">
+                    <p>Shipping</p>
+                    <p>Free</p>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <p class="h5 mb-5">Order Total</p>
+                    <p class="h5 mb-5" v-text="toCurrency(order.Total)"></p>
+                </div>
+
+                @*  Place Order  *@
+                <div class="mb-4">
+                    <div class="text-center">
+                        <button id="submitButton" type="button" class="btn btn-dark btn-lg w-50">Place order</button>
+                    </div>
+                    <p class="small text-muted mt-4 mb-0">By clicking "Place Order" I confirm I have read the <a href="#!">Privacy Policy</a> and <a href="#!">Cookie Notice</a>. I agree to the <a href="#!">terms & conditions</a> of the store. "I also accept that the store will process my personal data to manage my order, in accordance with the store's privacy policy"</p>
+                </div>
+            </form>
+
+            @*  Order Products List  *@
+            <div class="col-lg-6 ps-lg-4">
+                <h5 class="mb-4">Order Summary</h5>
+                @*  Order Line  *@
+                <div class="border-bottom pb-sm-4 pb-0 mb-4" v-for="line in order.Lines" :key="line.ProductId">
+                    <div class="d-flex justify-content-center">
+                        <div class="mb-4 mb-sm-0">
+                            <div class="bg-image hover-overlay ripple shadow-4 rounded-5" data-mdb-ripple-color="light">
+                                <div class="d-block">
+                                    <img :src="line.ImgUrl" :alt="line.Name" width="200px">
+                                </div>
+                                <div class="mask" style="background-color: rgba(255, 255, 255, 0.2);"></div>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3 d-flex h-100">
+                            <div class="d-sm-none d-block">
+                                <p class="fw-bold mb-2" v-text="line.Name"></p>
+                                <p class="mb-1 small" v-text="toCurrency(line.UnitPrice)"></p>
+                                <p class="mb-3 small">Quantity: <span v-text="line.Qty"></span></p>
+                                <p class="me-2 small">Total: <span v-text="toCurrency(line.UnitPrice*line.Qty)"></span></p>
+                            </div>
+                            <div class="d-none d-sm-block">
+                                <p class="fw-bold mb-2" v-text="line.Name"></p>
+                                <p class="mb-1 small"><span v-text="toCurrency(line.UnitPrice)"></span> ea </p>
+                                <p class="mb-1 small">Quantity: <span v-text="line.Qty"></span></p>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end pe-0 d-none d-sm-block">
+                            <span v-text="toCurrency(line.UnitPrice*line.Qty)"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="small">
+                    @*<p class="text-muted mb-4">Our returns are free and easy. If something isn't quite right, you have 14 days to send it back to us. Read more in our <a class="#!">return and refund policy</a>.</p>*@
+                    @*<p class="text-warning mb-4">FREE SHIPPING AVAILABLE FOR A LIMITED TIME</p>*@
+                    <p class="text-muted mb-0">In accordance with our <a class="#!">Privacy Policy</a>, if you are signed in to your store account, we will share personal data from your account for order checkout and payment purposes.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div v-else>
+        <a class="h-100" href="/">
+            <div class="alert" role="alert" data-mdb-color="primary">
+                <h4 class="alert-heading mb-4 mt-1">Your cart is empty</h4>
+                <p class="mb-2">
+                    Add products to your cart <a class="fw-bold link-unstyled" href="/">here</a>
+                </p>
+            </div>
+        </a>
+    </div>
+
+    <span id="jOrder" class="d-none" data-json='@Model.JsonOrder'></span>
+</div>
+
+
+@section Scripts {
+    <script src="https://js.braintreegateway.com/web/dropin/1.36.1/js/dropin.min.js"></script>
+    <script>
+        var clientToken = "@Model.ClientToken";
+        var form = document.querySelector('#payment-form');
+
+        braintree.dropin.create({
+            authorization: clientToken,
+            container: '#bt-dropin',
+            paypal: {
+                flow: 'vault'
+            }
+        }, function (createErr, instance) {
+            submitButton.addEventListener('click', function (event) {
+                event.preventDefault();
+                instance.requestPaymentMethod(function (err, payload) {
+                    if (err) {
+                        console.log('Error', err);
+                        return;
+                    }
+                    // Add the nonce to the form and submit
+                    //document.querySelector('#nonce').value = payload.nonce;
+                    //form.submit();
+
+                    // Add the nonce to the order and make the ajax request
+                    app.order.paymentMethodNonce = payload.nonce;
+                    app.insOrder();  
+                });
+            });
+        });
+    </script>
+
+    <script>
+        var pageMixin = {
+            data: function () {
+                return {
+                    order: null
+                }
+            },
+            methods: {
+                insOrder: function() {
+                    $.ajax({
+                        type: "POST",
+                        url: "/checkout/ajax-ins-order",
+                        dataType: "json",
+                        data: app.order,
+                        success: function (result) {
+                            window.location.href = "checkout/thank-you";
+                        },
+                        error: function (req, status, error) {
+                            app.order.InputErrors = req.responseJSON.inputErrors;
+                            console.log(status);
+                            // scroll to the top of the page
+                            $('html, body').animate({ scrollTop: 0 }, 'fast');
+                        }
+                    });
+                }
+            },
+            created() {
+                if ($('#jOrder').attr('data-json') != "") {
+                    this.order = JSON.parse($('#jOrder').attr('data-json'));
+                    this.order.paymentMethodNonce = null;
+                }
+            }
+        };
+
+        mixinArray.push(pageMixin);
+    </script>
+}

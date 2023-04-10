@@ -1,0 +1,214 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - James Clabo</title>
+    <link rel="stylesheet" href="/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="/MyApp.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="/lib/mdb5/css/mdb.min.css" />
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mulish" />
+    @RenderSection("Styles", required: false)
+</head>
+<body class="fonts-mulish">
+
+    <header class="mb-5">
+        @*  Standard navbar  *@
+        <div class="px-3 py-1 bg-primary d-sm-block d-none">
+            <div class="container">
+                <div class="d-flex flex-wrap align-items-center">
+                    <div class="nav col-12 my-2 text-small d-flex justify-content-start">
+                        <div class="col-2">
+                            <a href="/" class="nav-link text-white text-nowrap">
+                                <i class="fas fa-home text-white me-1"></i>
+                                Home
+                            </a>
+                        </div>
+                        <div class="col-8">
+                            @* Admin Links *@
+                            @*<a href="/admin/order-report" class="nav-link text-white d-inline-block">
+                                Order Rpt
+                            </a>
+                            <a href="/admin/product-report" class="nav-link text-white d-inline-block">
+                                Product Rpt
+                            </a>
+                            <a href="/admin/product" class="nav-link text-white d-inline-block">
+                                Product Editor
+                            </a>*@
+                        </div>
+                        <div class="col-2 d-flex justify-content-end">
+                            <a href="/myaccount" class="nav-link text-white text-nowrap d-inline-block me-5">
+                                <i class="fas fa-user-circle text-white me-1"></i>
+                                Account
+                            </a>
+                            <a href="/cart" class="nav-link text-white text-nowrap">
+                                <i class="fas fa-shopping-cart text-white me-1"></i>
+                                Cart
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="d-sm-block d-none">
+            <div class="pb-2" style="background-color:#6e96d8"></div>
+            @*<div class="pb-1" style="background-color:#aec5e9"></div>*@
+            <div class="bg-secondary pb-1"></div>
+        </div>
+        @*  Phone navbar / dropdown  *@
+        <div class="d-sm-none d-block">
+            <nav class="navbar navbar-secondary bg-primary">
+                <div class="container-fluid white">
+                    <button class="navbar-toggler" type="button" data-mdb-toggle="collapse" data-mdb-target="#navbarToggleContent">
+                        <i class="fas fa-bars text-white"></i>
+                    </button>
+                    <a href="/" class="nav-link text-white">
+                        <i class="fas fa-home me-1"></i>
+                        Home
+                    </a>
+                    <a href="/cart" class="nav-link text-white">
+                        <i class="fas fa-shopping-cart me-1"></i>
+                        Cart
+                    </a>
+                </div>
+            </nav>
+            <div class="collapse" id="navbarToggleContent">
+                <div class="bg-white shadow-3 py-2 px-3">
+                    <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                        <a href="/" class="nav-link text-dark fw-bold">
+                            <i class="fas fa-home me-1"></i>
+                            Home
+                        </a>
+                    </div>
+                    <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                        <a href="/myaccount" class="nav-link text-dark fw-bold">
+                            <i class="fas fa-user-circle me-1"></i>
+                            Account
+                        </a>
+                    </div>
+                    <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                        <a href="/cart" class="nav-link text-dark fw-bold">
+                            <i class="fas fa-shopping-cart me-1"></i>
+                            Cart
+                        </a>
+                    </div>
+                </div>
+                @* Admin Links *@
+                @*<div class="py-2 px-3" v-if="isAdmin">
+                    <div class="m-0 p-2 text-start text-dark"> Admin </div>
+                    <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                        <a href="/admin/order-report" class="nav-link text-dark">
+                            <i class="fas fa-chart-line text-dark me-1"></i>
+                            Order Report
+                        </a>
+                    </div>
+                    <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                        <a href="/admin/product-report" class="nav-link text-dark">
+                            <i class="fas fa-th-large text-dark me-1"></i>
+                            Product Report
+                        </a>
+                    </div>
+                    <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                        <a href="/admin/product" class="nav-link text-dark">
+                            <i class="fas fa-user-tie text-dark me-1"></i>
+                            Product Editor
+                        </a>
+                    </div>
+                </div>*@
+            </div>
+        </div>
+    </header>
+
+    <div id="app">
+        <main role="main" class="pb-5">
+            @RenderBody()
+        </main>
+    </div>
+
+    <div class="py-2 bg-dark mt-auto">
+        <div class="container">
+            <footer class="py-3 my-2 text-white">
+                <ul class="nav justify-content-center border-bottom border-white border-opacity-75 pb-3 mb-3">
+                    <li class="nav-item mx-sm-3 mx-1"><a href="/" class="nav-link px-2 text-white">Home</a></li>
+                    <li class="nav-item mx-sm-3 mx-1"><a href="/login" class="nav-link px-2 text-white">Login</a></li>
+                    <li class="nav-item mx-sm-3 mx-1"><a href="/myaccount" class="nav-link px-2 text-white">My Account</a></li>
+                    <li class="nav-item mx-sm-3 mx-1"><a href="/cart" class="nav-link px-2 text-white">Cart</a></li>
+                </ul>
+                <p class="text-center small">&copy; 2023 James Clabo</p>
+            </footer>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="https://unpkg.com/vue@2.7.14/dist/vue.min.js" asp-fallback-src="~/js/vue-2.7.14.min.js" crossorigin="anonymous"></script>
+    <script src="~/lib/mdb5/js/mdb.min.js"></script>
+    <script src="~/js/site.js"></script>
+    @RenderSection("Scripts", required: false)
+
+    <script>
+        Vue.config.errorHandler = function (err, vm, info) {
+            var errMsg = "";
+            if (err != null)
+                errMsg += "err: " + err + "\n";
+            if (vm != null)
+                errMsg += "vm: " + vm + "\n";
+            if (info != null)
+                errMsg += "info: " + info;
+            if (errMsg != "")    
+                alert(errMsg);
+        }
+
+        //window.onerror = function (msg, url, line, col, error) {
+        //    var errMsg = "";
+        //    if (msg != null)
+        //        errMsg += "msg: " + msg  + "\n";
+        //    if (url != null)
+        //        errMsg += "url: " + url  + "\n";
+        //    if (line != null)
+        //        errMsg += "line: " + line  + "\n";
+        //    if (col != null)
+        //        errMsg += "col: " + col + "\n";
+        //    if (error != null)
+        //        errMsg += "error: " + error;
+        //    if (errMsg != "")
+        //        alert(errMsg);
+        //}
+    </script>
+     
+    <script type="text/javascript">
+
+        var app = new Vue({
+            el: '#app',
+            mixins: mixinArray,
+            data: {
+                isAdmin: false
+            },
+            methods: {
+                toCurrency: function (value) {
+                    if (typeof value !== "number") {
+                        return value;
+                    }
+                    var formatter = new Intl.NumberFormat('en-US', {
+                        style: 'currency',
+                        currency: 'USD'
+                    });
+                    return formatter.format(value);
+                },
+                formatDate: function (oldDate) {
+                    let date = new Date(oldDate);
+                    let day, month, year;
+                    day = date.getDate();
+                    month = date.getMonth() + 1;
+                    year = date.getFullYear();
+                    // make sure DateTime.MinValue is not shown in updated columns
+                    if (month == 12 && day == 31 && year == 1969) 
+                        return '-';
+                    else return `${month}/${day}/${year}`;
+                }
+            }
+        });
+    </script>
+
+</body>
+</html>

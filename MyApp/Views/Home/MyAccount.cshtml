@@ -1,0 +1,436 @@
+﻿ @model HomeViewModel
+@{
+    ViewData["Title"] = "My Account";
+}
+<div class="container">
+    @*  Heading  *@
+    <div class="text-center mb-5">
+        <h3 class="fw-bold mb-3">
+            <span v-if="customer.addedAccountInfo">
+                Welcome, <span v-text="customer.First"></span>!
+            </span>
+            <span v-else>
+                Welcome!
+            </span>
+        </h3>
+        <p class="text-muted"> You can view and manage your account information below </p>
+    </div>
+    @*  Display info -- Edit info  *@
+    <div class="row border rounded-2 mb-4 py-4 px-xs-5 px-2 mx-0">
+        @*  Display account info  *@
+        <div class="col-lg-6 col-12 p-4">
+            <div v-if="customer.addedAccountInfo">
+                <h5 class="mb-4">Account Info</h5>
+                <span v-text="customer.First"></span> <span v-text="customer.Last"></span>
+                <div v-text="customer.AdrL1"></div>
+                <div v-text="customer.AdrL2"></div>
+                <span v-text="customer.City"></span>, <span v-text="customer.State"></span> <span v-text="customer.Zip"></span>
+                <p class="mb-4">United States</p>
+                <p v-text="customer.Email"></p>
+                <p v-text="customer.Phone"></p>
+                <small class="text-muted">Account information can be updated at your convenience</small>
+            </div>
+            <div v-else>
+                <h5 class="mb-4"> Your account has been created </h5>
+                <p> Click on <b> Add Account Info </b> to finish setting things up </p>
+            </div>
+            @*  Sign out  *@
+            <div class="mt-5">
+                <button class="btn btn-outline-primary btn-rounded fw-bold px-3 mb-3 mx-1" type="button"
+                        v-on:click="signOut()">
+                    Sign Out
+                </button>
+            </div>
+        </div>
+        @*  Edit account info  *@
+        <div class="col-lg-6 col-12 justify-content-between p-4">
+            <div v-if="customer.First">
+                <button class="btn btn-primary btn-rounded w-20 mb-3 mx-1" type="button"
+                        v-if="!editInfo" v-on:click="editInfo = !editInfo">
+                    Edit Account Info
+                </button>
+            </div>
+            <div v-else>
+                <button class="btn btn-primary btn-rounded w-20 mb-3 mx-1" type="button"
+                        v-if="!editInfo" v-on:click="editInfo = !editInfo">
+                    Add Account Info
+                </button>
+            </div>
+            @*  Form  *@
+            <div class="border rounded-4 p-4" v-if="editInfo">
+                <div class="row mb-4 border-bottom">
+                    <h5 class="col-6 my-auto text-nowrap">Edit Account</h5>
+                    <div class="col-6 d-flex justify-content-end">
+                        <button class="btn btn-secondary btn-rounded mb-3 px-3" type="button"
+                                v-on:click="editPass = !editPass" v-if="!editPass">
+                            Password
+                        </button>
+                        <div v-if="editPass">
+                            @*  Placing this v-if in a div prevents a bug with the button resizing after being inserted into the dom  *@
+                            <button class="btn btn-secondary btn-rounded mb-3 px-3" type="button"
+                                    v-on:click="editPass = !editPass">
+                                Back
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                @*  successMsg  *@
+                <div class="alert alert-dismissible fade show" role="alert" data-mdb-color="success" v-if="successMsg != null">
+                    <i v-text="successMsg"></i>
+                    <button type="button" class="btn-close" v-on:click="successMsg = null"></button>
+                </div>
+                @*  errMsg  *@
+                <div class="alert" role="alert" data-mdb-color="danger" v-if="errMsg != null">
+                    <i v-text="errMsg"></i>
+                </div>
+                @*  Form Error Message  *@
+                <div id="submit" class="alert" data-mdb-color="danger" v-if="customer.InputErrors[0]">
+                    <div class="alert-heading" v-for="(input, i) in customer.InputErrors">
+                        <b v-if="i == 0" v-text="input"></b>
+                        <div v-if="i > 0" v-text="input"></div>
+                    </div>
+                </div>
+                @*  Edit Non-Password Info  *@
+                <div v-if="!editPass">
+                    <div class="mb-4 border-bottom">
+                        @*  First -- Last  *@
+                        <div class="row">
+                            <div class="col-sm-6 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">First name <r>*</r></label>
+                                    <input id="first" type="text" class="form-control" maxlength="15" v-model="customer.First" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Last name <r>*</r></label>
+                                    <input id="last" type="text" class="form-control" maxlength="20" v-model="customer.Last" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*  Contact Info  *@
+                    <div class="mb-4 border-bottom">
+                        @*  Email -- Phone  *@
+                        <div class="row">
+                            <div class="col-sm-6 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Email <r>*</r></label>
+                                    <input id="email" type="text" class="form-control" maxlength="45" v-model="customer.Email" />
+                                </div>
+                            </div>
+                            <div class="col-sm-6 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Phone</label>
+                                    <input id="phone" type="tel" class="form-control" maxlength="20" v-model="customer.Phone" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*  Address Info  *@
+                    <div class="mb-0">
+                        @*  Adr2 L1 -- Adr L2  *@
+                        <div class="row">
+                            <div class="col-sm-8 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Street Address <r>*</r></label>
+                                    <input id="adrL1" type="text" class="form-control" maxlength="35" v-model="customer.AdrL1" />
+                                </div>
+                            </div>
+                            <div class="col-sm-4 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">Apt, suite, etc.</label>
+                                    <input id="adrL2" type="text" class="form-control" maxlength="35" v-model="customer.AdrL2" />
+                                </div>
+                            </div>
+                        </div>
+                        @*  City -- State -- Zip  *@
+                        <div class="row mb-4 border-bottom">
+                            <div class="col-sm-5 col-12">
+                                <div class="mb-4">
+                                    <label class="form-label">City <r>*</r></label>
+                                    <input id="city" type="text" class="form-control" maxlength="25" v-model="customer.City" />
+                                </div>
+                            </div>
+                            <div class="col-sm-3 col-6">
+                                <div class="mb-4">
+                                    <label class="form-label">State <r>*</r></label>
+                                    <input id="state" type="text" class="form-control" maxlength="2" v-model="customer.State" />
+                                </div>
+                            </div>
+                            <div class="col-sm-4 col-6">
+                                <div class="mb-4">
+                                    <label class="form-label">Zip <r>*</r></label>
+                                    <input id="zip" type="text" class="form-control" maxlength="5" v-model="customer.Zip" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*  Edit Password  *@
+                <div class="mb-4 border-bottom" v-if="editPass">
+                    @*  Current Password  *@
+                    <div class="mb-4">
+                        <label class="form-label">Current Password</label>
+                        <input type="password" class="form-control" v-model="customer.oldPswd" />
+                    </div>
+                    @*  New Password  *@
+                    <div class="mb-4">
+                        <label class="form-label">New Password</label>
+                        <input type="password" class="form-control" v-model="customer.newPswd" />
+                    </div>
+                    @*  Repeat New Password  *@
+                    <div class="mb-4">
+                        <label class="form-label">Repeat New Password</label>
+                        <input type="password" class="form-control" v-model="customer.repeatNewPswd" />
+                    </div>
+                </div>
+                @*  Buttons  *@
+                <div class="text-center">
+                    <button class="btn btn-primary btn-rounded w-20 my-3 mx-1" type="button" v-on:click="save()">
+                        Save
+                    </button>
+                    <button class="btn btn-secondary btn-rounded w-20 my-3 mx-1" type="button" v-on:click="closeEditInfo()">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @*  Sign out  *@
+    @*<div class="mt-5 text-center">
+    <button class="btn btn-outline-primary btn-rounded fw-bold px-3 mb-3 mx-1" type="button"
+    v-on:click="signOut()">
+    Sign Out
+    </button>
+    </div>*@
+    @*  Order History  *@
+    <div class="mb-4 border-bottom mt-5">
+        <h4>
+            Past Orders
+        </h4>
+    </div>
+    <div v-if="customer.Orders[0]">
+        @*  customer.Orders != null  *@
+        <div v-for="order in customer.Orders">
+            <div class="mx-sm-0 mx-1">
+                <h5> Order # <span v-text="order.OrderId"></span></h5>
+                <p> Order placed on <span v-text="formatDate(order.OrderDate)"></span></p>
+            </div>
+            @*  Laptop & larger: Shipping Address -- Order Summary  *@
+            <div class="border rounded-2 px-5 py-2 mb-4 d-lg-block d-none">
+                <div class="row">
+                    <div class="col-6 p-4">
+                        <h5 class="mb-4">Shipping Address</h5>
+                        <span v-text="order.First"></span> <span v-text="order.Last"></span>
+                        <div v-text="order.AdrL1"></div>
+                        <div v-text="order.AdrL2"></div>
+                        <span v-text="order.City"></span>, <span v-text="order.State"></span> <span v-text="order.Zip"></span>
+                        <p>United States</p>
+                    </div>
+                    <div class="col-6 p-4">
+                        <h5 class="mb-4">Order Summary</h5>
+                        <div class="d-flex justify-content-between">
+                            <p class="mb-3">Merchandise</p>
+                            <p class="mb-3" v-text="toCurrency(order.Subtotal)"></p>
+                        </div>
+                        <div class="d-flex justify-content-between border-bottom pb-2 mb-4">
+                            <p>Shipping</p>
+                            <p>Free</p>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <h5>Order Total</h5>
+                            <h5 v-text="toCurrency(order.Total)"></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row border rounded-2 px-4 py-4 mb-4 mx-sm-0 mx-1">
+                @*  Order Line: laptop & larger  *@
+                <div class="col-xl-4 col-6 p-2 d-none d-lg-block" v-for="line in order.Lines" :key="line.ProductId">
+                    <div class="d-lg-flex">
+                        <div class="mb-4 mb-lg-0">
+                            <div class="bg-image hover-overlay ripple shadow-4 rounded-5" data-mdb-ripple-color="light">
+                                <img :src="line.ImgUrl" :alt="line.Name" width="200px">
+                                <div class="mask" style="background-color: rgba(255, 255, 255, 0.2);"></div>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-lg-3 d-flex justify-content-between h-100">
+                            <div>
+                                <p class="fw-bold mb-2" v-text="line.Name"></p>
+                                <p class="mb-1 small" v-text="toCurrency(line.UnitPrice)"></p>
+                                <p class="mb-1 small">Quantity: <span v-text="line.Qty"></span></p>
+                                <p class="me-2 small">Total: <span v-text="toCurrency(line.UnitPrice*line.Qty)"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*  Tablet & smaller  *@
+                <div class="d-block d-lg-none">
+                    @*  Shipping Address  *@
+                    <div class="py-2">
+                        <h5 class="mb-4">Shipping Address</h5>
+                        <span v-text="order.First"></span> <span v-text="order.Last"></span>
+                        <div v-text="order.AdrL1"></div>
+                        <div v-text="order.AdrL2"></div>
+                        <span v-text="order.City"></span>, <span v-text="order.State"></span> <span v-text="order.Zip"></span>
+                        <p>United States</p>
+                    </div>
+                    @*  Products Purchased  *@
+                    <div class="row mb-4">
+                        <div class="py-2 my-2 d-block d-lg-none" v-for="(line, i) in order.Lines" :key="line.ProductId">
+                            <div class="d-flex justify-content-center">
+                                <div class="mb-0">
+                                    <div class="bg-image hover-overlay ripple shadow-4 rounded-5" data-mdb-ripple-color="light">
+                                        <div class="d-block">
+                                            <img :src="line.ImgUrl" :alt="line.Name" width="200px">
+                                        </div>
+                                        <div class="mask" style="background-color: rgba(255, 255, 255, 0.2);"></div>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3 d-flex">
+                                    <div class="d-sm-none d-block">
+                                        <p class="fw-bold mb-2" v-text="line.Name"></p>
+                                        <p class="mb-1 small"><span v-text="toCurrency(line.UnitPrice)"></span>ea</p>
+                                        <p class="mb-1 small">Qty: <span v-text="line.Qty"></span></p>
+                                        <p v-text="toCurrency(line.UnitPrice*line.Qty)"></p>
+                                    </div>
+                                    <div class="d-none d-sm-block">
+                                        <p class="fw-bold mb-2" v-text="line.Name"></p>
+                                        <p class="mb-1 small" v-text="toCurrency(line.UnitPrice)"></p>
+                                        <p class="mb-1 small">Quantity: <span v-text="line.Qty"></span></p>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end pe-0 d-none d-sm-block">
+                                    <p v-text="toCurrency(line.UnitPrice*line.Qty)"></p>
+                                </div>
+                            </div>
+                            <div class="border-bottom pt-4 mt-2" v-if="order.Lines[i+1] != null"></div>
+                        </div>
+                    </div>
+                    @*  Order Summary  *@
+                    <div class="justify-content-between py-2">
+                        <h5 class="mb-4">Order Summary</h5>
+                        <div class="d-flex justify-content-between">
+                            <p class="mb-3">Merchandise</p>
+                            <p class="mb-3" v-text="toCurrency(order.Subtotal)"></p>
+                        </div>
+                        <div class="d-flex justify-content-between border-bottom pb-2 mb-4">
+                            <p>Shipping</p>
+                            <p>Free</p>
+                        </div>
+                        <div class="d-flex justify-content-between fw-bold">
+                            <h5>Order Total</h5>
+                            <h5 v-text="toCurrency(order.Total)"></h5>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div v-else>
+        <div class="alert" role="alert" data-mdb-color="info">
+            <i class="fas fa-chevron-circle-right me-3"></i>Your purchases will appear here
+        </div>
+    </div>
+
+    <span id="json" class="d-none" data-json='@Model.Json'></span>
+</div>
+
+
+@section Scripts {
+    <script>
+
+        var pageMixin = {
+            data: function () {
+                return {
+                    customer: null,
+                    editInfo: false,
+                    editPass: false,
+                    errMsg: null,
+                    successMsg: null
+                }
+            },
+            methods: {
+                save: function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "/myaccount/ajax-save",
+                        dataType: "json",
+                        data: app.customer,
+                        success: function (result) {
+                            app.clearPswdVars();
+                            app.resetMsgs();
+                            app.successMsg = result.msg;
+
+                            if (app.customer.addedAccountInfo == false)
+                                app.customer.addedAccountInfo = true;
+                        },
+                        error: function (req, status, error) {
+                            app.resetMsgs();
+                            if (req.responseJSON.inputErrors != undefined) {
+                                app.customer.InputErrors = req.responseJSON.inputErrors;
+                            }
+                            if (req.responseJSON.errMsg != "") {
+                                app.errMsg = req.responseJSON.errMsg;
+                                console.log(status);
+                            }
+                        }
+                    });
+                },
+                signOut: function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "/myaccount/ajax-sign-out",
+                        dataType: "json",
+                        data: app.customer,
+                        success: function (result) {
+                            window.location.href = "/login";
+                        },
+                        error: function (req, status, error) {
+                            alert("error");
+                        }
+                    });
+                },
+                closeEditInfo: function () {
+                    $.ajax({
+                        type: "POST",
+                        url: "/myaccount/ajax-customer",
+                        dataType: "json",
+                        success: function (result) {
+                            app.editInfo = false;
+                            app.editPass = false;
+                            app.clearPswdVars();
+                            app.resetMsgs();
+                        },
+                        error: function (req, status, error) {
+                        }
+                    });
+                },
+                resetMsgs: function () {
+                    app.customer.InputErrors = [];
+                    app.errMsg = null;
+                    app.successMsg = null;
+                },
+                clearPswdVars: function () {
+                    app.customer.oldPswd = null;
+                    app.customer.newPswd = null;
+                    app.customer.repeatNewPswd = null;
+                },
+            },
+            created() {
+                if ($('#json').attr('data-json') != "") {
+                    this.customer = JSON.parse($('#json').attr('data-json'));
+                    this.customer.oldPswd = null;
+                    this.customer.newPswd = null;
+                    this.customer.repeatNewPswd = null;
+                    this.customer.addedAccountInfo = false;
+                    if (this.customer.First != "")
+                        this.customer.addedAccountInfo = true;
+                }
+            }
+        };
+
+        mixinArray.push(pageMixin);
+    </script>
+}

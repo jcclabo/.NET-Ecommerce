@@ -1,0 +1,205 @@
+﻿@model OrderViewModel
+@{
+    ViewData["Title"] = "Cart";
+}
+<div class="container">
+    <div class="row" v-if="order.Lines[0] != null">
+
+        <div class="col-lg-8 mb-4 mb-md-0">
+            @*  Product list  *@
+            <div class="mb-4" v-for="line in order.Lines" :key="line.ProductId">
+                @*  Order Line  *@
+                <div :id="line.ProductId" class="card rounded-6 p-2 py-0">
+                    @*  Phones: img above row  *@
+                    <div class="d-xs-block d-sm-none">
+                        <div class="bg-image ripple rounded-5 mb-4 d-block" data-ripple-color="light">
+                            <img class="w-100" :src="line.ImgUrl" :alt="line.Name" />
+                            <a>
+                                <div class="hover-overlay">
+                                    <div class="mask" style="background-color: hsla(0, 0%, 98.4%, 0.2)"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    @*  Non-Phone: img in row for order line  *@
+                    <div class="row py-2">
+                        <div class="col-sm-10 col-7 d-flex justify-content-start">
+                            @*  img  *@
+                            <div class="d-sm-inline-block d-none">
+                                <div class="bg-image ripple rounded-5 d-block" data-ripple-color="light">
+                                    <img style="width:200px" :src="line.ImgUrl" :alt="line.Name" />
+                                    <a>
+                                        <div class="hover-overlay">
+                                            <div class="mask" style="background-color: hsla(0, 0%, 98.4%, 0.2)"></div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                            @*  info beside  *@
+                            <div class="d-sm-inline-block d-block d-flex justify-content-start">
+                                <div class="ps-sm-4">
+                                    <p class="fw-bold" v-text="line.Name"></p>
+                                    <div class="d-block small">
+                                        <p class="my-1 text-muted">
+                                            <span v-text="toCurrency(line.UnitPrice)"></span> ea
+                                        </p>
+                                        <p class="mb-2">
+                                            <span class="text-muted me-2" v-text="line.Descr"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        @*  Line Total col *@
+                        <div class="col-sm-2 col-5">
+                            <div class="d-flex justify-content-end me-2">
+                                <p v-text="toCurrency(line.UnitPrice*line.Qty)"></p>
+                            </div>
+                            @*  Qty   *@
+                            <div class="">
+                                <div class="d-flex justify-content-end">
+                                    <a class="me-2" v-on:click="shwQtyBtns=!shwQtyBtns" v-if="!shwQtyBtns">Edit</a>
+                                    <a class="me-2" v-on:click="shwQtyBtns=!shwQtyBtns" v-if="shwQtyBtns">Hide</a>
+                                    <p class="me-2">
+                                        <span class="me-1">Qty:</span><span v-text="line.Qty"></span>
+                                    </p>
+                                </div>
+                                <div class="d-flex justify-content-end" v-if="shwQtyBtns">
+                                    <button class="btn btn-secondary text-primary rounded-3 border-0 me-1 p-2" v-on:click="qtyPlus(line.ProductId)">
+                                        <b>+ 1</b>
+                                    </button>
+                                    <button class="btn btn-secondary text-primary rounded-3 border-0 p-2" v-on:click="qtyMinus(line.ProductId)">
+                                        <b>- 1</b>
+                                    </button>
+                                </div>
+                                <p class="d-flex justify-content-end mb-2 me-2" v-else>
+                                    <button class="btn btn-tertiary text-primary rounded-3 p-0 " v-on:click="rmvLine(line.ProductId)">
+                                        <small class="text-nowrap"><i class="fas fa-trash me-2"></i>Remove</small>
+                                    </button>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @*  Order Line  *@
+            </div>
+
+            @*  Message  *@
+            <div class="mb-5 pt-3">
+                <p class="text-primary">
+                    <i class="fas fa-info-circle mr-1"></i> Items are not reserved when they are in your cart
+                </p>
+            </div>
+        </div>
+
+        <div class="col-lg-4 mb-4 mb-md-0">
+            @*  Summary  *@
+            <div class="shadow-4 p-4 rounded-6 mb-4">
+                <h5 class="mb-4"> Order Summary </h5>
+                <div class="d-flex justify-content-between mb-3">
+                    <span>Merchandise</span>
+                    <span v-text="toCurrency(order.Subtotal)"></span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>Estimated Shipping</span>
+                    <span>Free</span>
+                </div>
+                <hr class="my-4" />
+                <div class="d-flex justify-content-between fw-bold mb-5">
+                    <span>Order Total </span>
+                    <span v-text="toCurrency(order.Total)"></span>
+                </div>
+                <a href="/checkout">
+                    <div class="btn btn-primary btn-rounded w-100">
+                        Go to checkout
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div v-else>
+        <a class="h-100" href="/">
+            <div class="alert" role="alert" data-mdb-color="primary">
+                <h4 class="alert-heading mb-4 mt-1">Your cart is empty</h4>
+                <p class="mb-2">
+                    Add products to your cart <span class="fw-bold link-unstyled">here</span>
+                </p>
+            </div>
+        </a>
+    </div>
+
+    <span id="jOrder" class="d-none" data-json='@Model.JsonOrder'></span>
+</div>
+
+
+@section Scripts {
+    <script>
+
+        var pageMixin = {
+            data: function () {
+                return {
+                    order: null,
+                    shwQtyBtns: false
+                }
+            }, 
+            methods: {
+                rmvLine: function (productId) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/cart/ajax-rmv-line",
+                        dataType: "json",
+                        data: { "productId": productId },
+                        success: function (result) {
+                            app.setOrderFromJson(result);
+                        },
+                        error: function (req, status, error) {
+                            alert("error");
+                            console.log(status);
+                        }
+                    });
+                },
+                qtyPlus: function (productId) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/cart/ajax-qty-plus",
+                        dataType: "json",
+                        data: { "productId": productId },
+                        success: function (result) {
+                            app.setOrderFromJson(result);
+                        },
+                        error: function (req, status, error) {
+                            alert("error");
+                            console.log(status);
+                        }
+                    });
+                },
+                qtyMinus: function (productId) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/cart/ajax-qty-minus",
+                        dataType: "json",
+                        data: { "productId": productId },
+                        success: function (result) {
+                            app.setOrderFromJson(result);
+                        },
+                        error: function (req, status, error) {
+                            alert("error");
+                            console.log(status);
+                        }
+                    });
+                },
+                setOrderFromJson: function (json) {
+                    this.order = JSON.parse(json);
+                }
+            },
+            created() {
+                if($('#jOrder').attr('data-json') != "") {
+                    this.order = JSON.parse($('#jOrder').attr('data-json'));
+                }
+            }
+        };
+
+        mixinArray.push(pageMixin);
+    </script>
+}

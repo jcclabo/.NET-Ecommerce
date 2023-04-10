@@ -1,0 +1,125 @@
+﻿@model OrderViewModel
+@{
+    ViewData["Title"] = "Thank You";
+}
+<div class="container">
+    <div v-if="order != null">
+        @*  Heading  *@
+        <div class="text-center mb-5">
+            <h3 class="fw-bold mb-3">Thanks for your order, <span v-text="order.First"></span>!</h3>
+            <p class="text-muted">Your order is in the works. An email will be sent to <span v-text="order.Email" /> with your order reciept</p>
+        </div>
+        @*  Shipping To -- Order Summary  *@
+        <div class="row border rounded-2 px-md-5 px-2 py-md-4 py-2 mb-4 mx-1">
+            <div class="col-sm-6 col-12 p-4">
+                <h5 class="mb-4">Shipping To</h5>
+                <span v-text="order.First"></span> <span v-text="order.Last"></span>
+                <div v-text="order.AdrL1"></div>
+                <div v-text="order.AdrL2"></div>
+                <span v-text="order.City"></span>, <span v-text="order.State"></span> <span v-text="order.Zip"></span>
+                <p>United States</p>
+                <small class="text-muted">Tracking information will be avilable once your order ships</small>
+            </div>
+            <div class="col-sm-6 col-12 justify-content-between p-4">
+                <h5 class="mb-4">Order Summary</h5>
+                <div class="d-flex justify-content-between">
+                    <p class="mb-3">Merchandise</p>
+                    <p class="mb-3" v-text="toCurrency(order.Subtotal)"></p>
+                </div>
+                <div class="d-flex justify-content-between border-bottom pb-2 mb-4">
+                    <p>Shipping</p>
+                    <p>Free</p>
+                </div>
+                <div class="d-flex justify-content-between fw-bold">
+                    <h5>Order Total</h5>
+                    <h5 v-text="toCurrency(order.Total)"></h5>
+                </div>
+            </div>
+        </div>
+
+        <div class="row border rounded-2 px-md-5 px-2 py-md-4 py-2 mb-4 mx-1">
+            @*  laptop & larger: Purchased Products List  *@
+            <div class="col-xl-4 col-6 p-2 d-none d-lg-block" v-for="line in order.Lines" :key="line.ProductId">
+                <div class="d-lg-flex">
+                    <div class="mb-4 mb-lg-0">
+                        <div class="bg-image hover-overlay ripple shadow-4 rounded-5" data-mdb-ripple-color="light">
+                            <a class="d-lg-block d-none" href="">
+                                <img :src="line.ImgUrl" :alt="line.Name" width="200px">
+                            </a>
+                            <a class="row d-lg-none d-block" href="">
+                                <img :src="line.ImgUrl" :alt="line.Name" width="100%">
+                            </a>
+                            <div class="mask" style="background-color: rgba(255, 255, 255, 0.2);"></div>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-lg-3 d-flex justify-content-between h-100">
+                        <div>
+                            <p class="fw-bold mb-2" v-text="line.Name"></p>
+                            <p class="mb-1 small" v-text="toCurrency(line.UnitPrice)"></p>
+                            <p class="mb-1 small">Quantity: <span v-text="line.Qty"></span></p>
+                            <p class="me-2 small">Total: <span v-text="toCurrency(line.UnitPrice*line.Qty)"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @*  tablet & smaller: Puchased Products List  *@
+            <div class="py-2 my-2 d-block d-lg-none" v-for="(line, i) in order.Lines" :key="line.ProductId">
+                <div class="d-flex justify-content-center">
+                    <div class="mb-0">
+                        <div class="bg-image hover-overlay ripple shadow-4 rounded-5" data-mdb-ripple-color="light">
+                            <div class="d-block">
+                                <img :src="line.ImgUrl" :alt="line.Name" width="200px">
+                            </div>
+                            <div class="mask" style="background-color: rgba(255, 255, 255, 0.2);"></div>
+                        </div>
+                    </div>
+                    <div class="flex-grow-1 ms-3 d-flex">
+                        <div class="d-sm-none d-block">
+                            <p class="fw-bold mb-2" v-text="line.Name"></p>
+                            <p class="mb-1 small"><span v-text="toCurrency(line.UnitPrice)"></span>ea</p>
+                            <p class="mb-1 small">Qty: <span v-text="line.Qty"></span></p>
+                            <p class="me-2" v-text="toCurrency(line.UnitPrice*line.Qty)"></p>
+                        </div>
+                        <div class="d-none d-sm-block">
+                            <p class="fw-bold mb-2" v-text="line.Name"></p>
+                            <p class="mb-1 small" v-text="toCurrency(line.UnitPrice)">€49.00</p>
+                            <p class="mb-1 small">Quantity: <span v-text="line.Qty"></span></p>
+                        </div>
+                    </div>
+                    <div class="d-flex justify-content-end pe-0 d-none d-sm-block">
+                        <p class="me-2 text-nowrap">Total: <span v-text="toCurrency(line.UnitPrice*line.Qty)"></span></p>
+                    </div>
+                </div>
+                <div class="border-bottom pt-4 mt-2" v-if="order.Lines[i+1] != null"></div>
+            </div>
+        </div>
+    </div>
+
+    <span id="jOrder" class="d-none" data-json='@Model.JsonOrder'></span>
+</div>
+
+
+@section Scripts {
+    <script>
+
+        var pageMixin = {
+            data: function () {
+                return {
+                    order: null,
+                    arrivalStart: null,
+                    arrivalEnd: null
+                }
+            },
+            methods: { },
+            created() {
+                if ($('#jOrder').attr('data-json') != "") {
+                    this.order = JSON.parse($('#jOrder').attr('data-json'));
+                    // calculate estimated arrival
+                }
+                
+            }
+        };
+
+        mixinArray.push(pageMixin);
+    </script>
+} 

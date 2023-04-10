@@ -1,0 +1,65 @@
+﻿@model AdminViewModel
+@{
+    ViewData["Title"] = "Product Report";
+}
+<div class="container">
+    <div class="d-flex justify-content-between">
+        <h5 class="my-auto">Product Report</h5>
+        <a href="/admin">
+            <div class="btn btn-outline-primary btn-rounded fw-bold w-20 my-3 mx-1">
+                Dashboard
+            </div>
+        </a>
+    </div>
+    <div id="table" style="font-family:'Times New Roman'" data-mdb-striped="true" data-mdb-fixed-header="false" data-mdb-loader-class="bg-secondary" data-mdb-border-color="secondary"
+         data-mdb-full-pagination="true" 
+         entriesOptions=[10, 25, 50, 200]> <!-- temporay hack for entriesOptions, which was necessary for pagination. Tired many other ways to get this to work but documentation is limited and it would not cooperate -->
+    </div>
+
+    <span id="jsonProducts" class="d-none" data-json='@Model.Json'></span>
+</div>
+
+
+@section Scripts {
+    <script>
+        var pageMixin = {
+            data: function () {
+                return {
+                    products: null,
+                    content: null
+                }
+            },
+            methods: { },
+            created() {
+                if ($('#jsonProducts').attr('data-json') != "") {
+                    this.products = JSON.parse($('#jsonProducts').attr('data-json'));
+                    for (var i = 0; i < this.products.length; i++) {
+                        this.products[i].InsWhen = this.formatDate(this.products[i].InsWhen);
+                        this.products[i].UpdWhen = this.formatDate(this.products[i].UpdWhen);
+                    }
+                    this.content = {
+                        columns: [
+                            { label: 'ID', field: 'ProductId', sort: true },
+                            { label: 'Name', field: 'Name', sort: true },
+                            { label: 'Cost', field: 'Cost', sort: true },
+                            { label: 'Price', field: 'Price', sort: true },
+                            //{ label: 'Description', field: 'Descr', sort: false },
+                            { label: 'Inserted', field: 'InsWhen', sort: true },
+                            { label: 'Updated', field: 'UpdWhen', sort: true },
+                            { label: '', field: 'edit', sort: false },
+                        ],
+                        rows: this.products.map((row) => {
+                            return {
+                                ...row,
+                                edit: `<a href="/admin/product?productId=${row.ProductId}" target="_blank">Edit</a>`
+                            };
+                        }),
+                    };
+                    new mdb.Datatable(document.getElementById('table'), this.content);
+                }
+            }
+        };
+
+        mixinArray.push(pageMixin);
+    </script>
+}

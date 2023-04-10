@@ -1,0 +1,25 @@
+/* Layout */
+/*@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}*/
+
+html {
+    position: relative;
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.fonts-mulish {
+    font-family: 'Mulish';
+}
+
+r {
+    color: #df4759;
+}
