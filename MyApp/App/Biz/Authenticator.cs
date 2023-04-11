@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using MyApp.App.Utils;
+using System.Globalization;
 
 namespace MyApp.App.Biz
 {
@@ -15,6 +16,7 @@ namespace MyApp.App.Biz
         }
 
         public static bool AdminAuth(string email, string password) {
+            email = email.ToLower(new CultureInfo("en-US", false));
             App.Biz.Customer customer = new();
             string adminEmail = AppSettings.GetString("AdminEmail");
             bool correctEmail = VerifyHash(customer, adminEmail, email);
@@ -26,6 +28,7 @@ namespace MyApp.App.Biz
         }
 
         public static bool CustomerAuth(string email, string password) {
+            email = email.ToLower(new CultureInfo("en-US", false));
             App.Biz.Customer customer = new();
             customer = customer.GetByEmail(email);
             if (customer.Error == "")

@@ -118,6 +118,11 @@
                     </div>
                 </div>
 
+                @*  Payment Error Message  *@
+                <div id="submit" class="alert" data-mdb-color="danger" v-if="paymentInputError">
+                    <div v-text="paymentInputError"></div>
+                </div>
+
                 @*  Braintree drop-in UI  *@
                 <div class="">
                     <div id="bt-dropin"></div>
@@ -142,7 +147,7 @@
                     <div class="text-center">
                         <button id="submitButton" type="button" class="btn btn-dark btn-lg w-50">Place order</button>
                     </div>
-                    <p class="small text-muted mt-4 mb-0">By clicking "Place Order" I confirm I have read the <a href="#!">Privacy Policy</a> and <a href="#!">Cookie Notice</a>. I agree to the <a href="#!">terms & conditions</a> of the store. "I also accept that the store will process my personal data to manage my order, in accordance with the store's privacy policy"</p>
+                    <p class="small text-muted mt-4 mb-0">By clicking "Place Order" I confirm I have read the <a href="">Privacy Policy</a> and <a href="">Cookie Notice</a>. I agree to the <a href="">terms & conditions</a> of the store. "I also accept that the store will process my personal data to manage my order, in accordance with the store's privacy policy"</p>
                 </div>
             </form>
 
@@ -182,7 +187,7 @@
                 <div class="small">
                     @*<p class="text-muted mb-4">Our returns are free and easy. If something isn't quite right, you have 14 days to send it back to us. Read more in our <a class="#!">return and refund policy</a>.</p>*@
                     @*<p class="text-warning mb-4">FREE SHIPPING AVAILABLE FOR A LIMITED TIME</p>*@
-                    <p class="text-muted mb-0">In accordance with our <a class="#!">Privacy Policy</a>, if you are signed in to your store account, we will share personal data from your account for order checkout and payment purposes.</p>
+                    <p class="text-muted mb-0">In accordance with our <a href="">Privacy Policy</a>, if you are signed in to your store account, we will share personal data from your account for order checkout and payment purposes.</p>
                 </div>
             </div>
         </div>
@@ -219,7 +224,7 @@
                 event.preventDefault();
                 instance.requestPaymentMethod(function (err, payload) {
                     if (err) {
-                        console.log('Error', err);
+                        app.paymentInputError = "A valid payment method is needed to process your order";
                         return;
                     }
                     // Add the nonce to the form and submit
@@ -238,7 +243,8 @@
         var pageMixin = {
             data: function () {
                 return {
-                    order: null
+                    order: null,
+                    paymentInputError: null
                 }
             },
             methods: {

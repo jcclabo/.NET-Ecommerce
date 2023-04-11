@@ -8,6 +8,7 @@ using MyApp.App.PaymentGateway;
 using Braintree;
 using System.Reflection;
 using System.Text.Json.Serialization;
+using System.Globalization;
 
 namespace MyApp.App.Biz
 {
@@ -156,12 +157,12 @@ namespace MyApp.App.Biz
             sqlCmd.Parameters.Add("@customerId", SqlDbType.Int).Value = CustomerId;
             sqlCmd.Parameters.Add("@first", SqlDbType.VarChar).Value = First;
             sqlCmd.Parameters.Add("@last", SqlDbType.VarChar).Value = Last;
-            sqlCmd.Parameters.Add("@email", SqlDbType.VarChar).Value = Email;
+            sqlCmd.Parameters.Add("@email", SqlDbType.VarChar).Value = Email.ToLower(new CultureInfo("en-US", false));
             sqlCmd.Parameters.Add("@phone", SqlDbType.VarChar).Value = Phone;
             sqlCmd.Parameters.Add("@adrL1", SqlDbType.VarChar).Value = AdrL1;
             sqlCmd.Parameters.Add("@adrL2", SqlDbType.VarChar).Value = AdrL2;
             sqlCmd.Parameters.Add("@city", SqlDbType.VarChar).Value = City;
-            sqlCmd.Parameters.Add("@state", SqlDbType.VarChar).Value = State;
+            sqlCmd.Parameters.Add("@state", SqlDbType.VarChar).Value = State.ToUpper(new CultureInfo("en-US", false));
             sqlCmd.Parameters.Add("@zip", SqlDbType.VarChar).Value = Zip;
             sqlCmd.Parameters.Add("@subtotal", SqlDbType.Money).Value = Subtotal;
             sqlCmd.Parameters.Add("@shipping", SqlDbType.Money).Value = Shipping;

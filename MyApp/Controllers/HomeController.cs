@@ -6,7 +6,7 @@ using System.Text.Json;
 
 namespace MyApp.Controllers
 {
-    public class HomeController : Controller
+    public class HomeController : BaseController
     {
         [HttpGet, Route("/")]
         public ActionResult Index() {
@@ -143,7 +143,7 @@ namespace MyApp.Controllers
             customer.CustomerId = int.Parse(data["CustomerId"]);
 
             if (data["First"] != null)
-                customer.First = data["First"];
+                customer.First = data["First"]; 
             if (data["Last"] != null)
                 customer.Last = data["Last"];
             if (data["Email"] != null)
@@ -175,7 +175,7 @@ namespace MyApp.Controllers
             bool success;
             // if a password variable was set
             if (oldPswd != "" || newPswd != "" || repeatNewPswd != "") {
-                success = customer.Update(customer.CustomerId, oldPswd, newPswd, repeatNewPswd);
+                success = customer.UpdatePassword(customer.CustomerId, oldPswd, newPswd, repeatNewPswd);
             } else {
                 success = customer.Update(customer.CustomerId);
             }

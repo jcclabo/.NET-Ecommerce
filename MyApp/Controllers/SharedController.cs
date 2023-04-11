@@ -4,7 +4,7 @@ using MyApp.Models;
 
 namespace MyApp.Controllers
 {
-    public class SharedController : Controller
+    public class SharedController : BaseController
     {
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         [HttpGet, Route("/Error")]

@@ -26,26 +26,40 @@
                             </a>
                         </div>
                         <div class="col-8">
-                            @* Admin Links *@
-                            @*<a href="/admin/order-report" class="nav-link text-white d-inline-block">
-                                Order Rpt
-                            </a>
-                            <a href="/admin/product-report" class="nav-link text-white d-inline-block">
-                                Product Rpt
-                            </a>
-                            <a href="/admin/product" class="nav-link text-white d-inline-block">
-                                Product Editor
-                            </a>*@
+                        @* Admin Links *@
+                        @if (ViewBag.Admin)
+                        {
+                            <div>
+                                <a href="/admin/order-report" class="nav-link text-white d-inline-block">
+                                    Order Rpt
+                                </a>
+                                <a href="/admin/product-report" class="nav-link text-white d-inline-block">
+                                    Product Rpt
+                                </a>
+                                <a href="/admin/product" class="nav-link text-white d-inline-block">
+                                    Product Editor
+                                </a>
+                            </div>
+                        }
                         </div>
                         <div class="col-2 d-flex justify-content-end">
+                        @if (ViewBag.SignedIn)
+                        {
                             <a href="/myaccount" class="nav-link text-white text-nowrap d-inline-block me-5">
                                 <i class="fas fa-user-circle text-white me-1"></i>
-                                Account
+                                My Account
                             </a>
-                            <a href="/cart" class="nav-link text-white text-nowrap">
-                                <i class="fas fa-shopping-cart text-white me-1"></i>
-                                Cart
+                        } else {
+                            <a href="/login" class="nav-link text-white text-nowrap d-inline-block me-5">
+                                <i class="fas fa-user-circle text-white me-1"></i>
+                                Login
                             </a>
+                         }
+                        <a href="/cart" class="nav-link text-white text-nowrap">
+                            <i class="fas fa-shopping-cart text-white me-1"></i>
+                            Cart
+                            <span class="badge bg-danger ms-2">@ViewBag.NumOrderLines</span>
+                        </a>
                         </div>
                     </div>
                 </div>
@@ -70,6 +84,7 @@
                     <a href="/cart" class="nav-link text-white">
                         <i class="fas fa-shopping-cart me-1"></i>
                         Cart
+                        <span class="badge bg-danger ms-2">@ViewBag.NumOrderLines</span>
                     </a>
                 </div>
             </nav>
@@ -81,12 +96,21 @@
                             Home
                         </a>
                     </div>
-                    <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
-                        <a href="/myaccount" class="nav-link text-dark fw-bold">
-                            <i class="fas fa-user-circle me-1"></i>
-                            Account
-                        </a>
-                    </div>
+                    @if (ViewBag.SignedIn) {
+                        <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                            <a href="/myaccount" class="nav-link text-dark fw-bold">
+                                <i class="fas fa-user-circle me-1"></i>
+                                My Account
+                            </a>
+                        </div>
+                    } else {
+                        <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                            <a href="/myaccount" class="nav-link text-dark fw-bold">
+                                <i class="fas fa-user-circle me-1"></i>
+                                Login
+                            </a>
+                        </div>
+                    }
                     <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
                         <a href="/cart" class="nav-link text-dark fw-bold">
                             <i class="fas fa-shopping-cart me-1"></i>
@@ -94,8 +118,10 @@
                         </a>
                     </div>
                 </div>
-                @* Admin Links *@
-                @*<div class="py-2 px-3" v-if="isAdmin">
+            @* Admin Links *@
+            @if (ViewBag.Admin)
+            {
+                <div class="py-2 px-3">
                     <div class="m-0 p-2 text-start text-dark"> Admin </div>
                     <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
                         <a href="/admin/order-report" class="nav-link text-dark">
@@ -115,11 +141,12 @@
                             Product Editor
                         </a>
                     </div>
-                </div>*@
+                </div>
+            }
             </div>
         </div>
     </header>
-
+    
     <div id="app">
         <main role="main" class="pb-5">
             @RenderBody()
@@ -131,14 +158,20 @@
             <footer class="py-3 my-2 text-white">
                 <ul class="nav justify-content-center border-bottom border-white border-opacity-75 pb-3 mb-3">
                     <li class="nav-item mx-sm-3 mx-1"><a href="/" class="nav-link px-2 text-white">Home</a></li>
-                    <li class="nav-item mx-sm-3 mx-1"><a href="/login" class="nav-link px-2 text-white">Login</a></li>
+                @if (ViewBag.SignedIn) {
                     <li class="nav-item mx-sm-3 mx-1"><a href="/myaccount" class="nav-link px-2 text-white">My Account</a></li>
+                } else {
+                    <li class="nav-item mx-sm-3 mx-1"><a href="/login" class="nav-link px-2 text-white">Login</a></li>
+                }
                     <li class="nav-item mx-sm-3 mx-1"><a href="/cart" class="nav-link px-2 text-white">Cart</a></li>
+                    <li class="nav-item mx-sm-3 mx-1"><a href="/checkout" class="nav-link px-2 text-white">Checkout</a></li>
                 </ul>
                 <p class="text-center small">&copy; 2023 James Clabo</p>
             </footer>
         </div>
     </div>
+
+    @*<partial name="_CookieConsentPartial" />*@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="https://unpkg.com/vue@2.7.14/dist/vue.min.js" asp-fallback-src="~/js/vue-2.7.14.min.js" crossorigin="anonymous"></script>

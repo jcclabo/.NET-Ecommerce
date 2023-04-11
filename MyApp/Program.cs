@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Rewrite;
 using MyApp.App.Middleware;
 
@@ -12,6 +13,13 @@ builder.Services.AddSession(options => {
     options.IdleTimeout = TimeSpan.FromMinutes(30);
     options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ensure client side scripts cannot access the session cookie
 });
+
+//builder.Services.Configure<CookiePolicyOptions>(options => {
+//    // This lambda determines whether user consent for non-essential 
+//    // cookies is needed for a given request.
+//    options.CheckConsentNeeded = context => true;
+//    options.MinimumSameSitePolicy = SameSiteMode.None;
+//});
 
 builder.Services.AddTransient<GlobalErrorHandlingMiddleware>();
 

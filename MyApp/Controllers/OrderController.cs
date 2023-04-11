@@ -7,7 +7,7 @@ using MyApp.App.PaymentGateway;
 
 namespace MyApp.Controllers
 {
-    public class OrderController : Controller 
+    public class OrderController : BaseController
     {
         /* Cart Section */
 

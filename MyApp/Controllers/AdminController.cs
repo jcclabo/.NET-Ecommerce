@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace MyApp.Controllers
 {
-    public class AdminController : Controller
+    public class AdminController : BaseController
     {
         [HttpGet, Route("/admin")]
         public ActionResult AdminDashboard() {

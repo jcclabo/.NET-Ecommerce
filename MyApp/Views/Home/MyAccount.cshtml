@@ -43,7 +43,7 @@
             </div>
         </div>
         @*  Edit account info  *@
-        <div class="col-lg-6 col-12 justify-content-between p-4">
+        <div class="col-lg-6 col-12 justify-content-between py-4 px-1 px-sm-4">
             <div v-if="customer.First">
                 <button class="btn btn-primary btn-rounded w-20 mb-3 mx-1" type="button"
                         v-if="!editInfo" v-on:click="editInfo = !editInfo">
@@ -61,128 +61,133 @@
                 <div class="row mb-4 border-bottom">
                     <h5 class="col-6 my-auto text-nowrap">Edit Account</h5>
                     <div class="col-6 d-flex justify-content-end">
-                        <button class="btn btn-secondary btn-rounded mb-3 px-3" type="button"
+                        <button class="btn btn-secondary btn-rounded mb-3 px-3 fw-bold" type="button"
                                 v-on:click="editPass = !editPass" v-if="!editPass">
                             Password
                         </button>
                         <div v-if="editPass">
                             @*  Placing this v-if in a div prevents a bug with the button resizing after being inserted into the dom  *@
-                            <button class="btn btn-secondary btn-rounded mb-3 px-3" type="button"
+                            <button class="btn btn-secondary btn-rounded mb-3 px-3 fw-bold" type="button"
                                     v-on:click="editPass = !editPass">
                                 Back
                             </button>
                         </div>
                     </div>
                 </div>
-                @*  successMsg  *@
-                <div class="alert alert-dismissible fade show" role="alert" data-mdb-color="success" v-if="successMsg != null">
-                    <i v-text="successMsg"></i>
-                    <button type="button" class="btn-close" v-on:click="successMsg = null"></button>
-                </div>
-                @*  errMsg  *@
-                <div class="alert" role="alert" data-mdb-color="danger" v-if="errMsg != null">
-                    <i v-text="errMsg"></i>
-                </div>
-                @*  Form Error Message  *@
-                <div id="submit" class="alert" data-mdb-color="danger" v-if="customer.InputErrors[0]">
-                    <div class="alert-heading" v-for="(input, i) in customer.InputErrors">
-                        <b v-if="i == 0" v-text="input"></b>
-                        <div v-if="i > 0" v-text="input"></div>
+                <div class="">
+                    @*  successMsg  *@
+                    <div class="alert alert-dismissible fade show" role="alert" data-mdb-color="success" v-if="successMsg != null">
+                        <i v-text="successMsg"></i>
+                        <button type="button" class="btn-close" v-on:click="successMsg = null"></button>
                     </div>
-                </div>
-                @*  Edit Non-Password Info  *@
-                <div v-if="!editPass">
-                    <div class="mb-4 border-bottom">
-                        @*  First -- Last  *@
-                        <div class="row">
-                            <div class="col-sm-6 col-12">
-                                <div class="mb-4">
-                                    <label class="form-label">First name <r>*</r></label>
-                                    <input id="first" type="text" class="form-control" maxlength="15" v-model="customer.First" />
+                    @*  errMsg  *@
+                    <div class="alert" role="alert" data-mdb-color="danger" v-if="errMsg != null">
+                        <i v-text="errMsg"></i>
+                    </div>
+                    @*  Form Error Message  *@
+                    <div id="submit" class="alert" data-mdb-color="danger" v-if="customer.InputErrors[0]">
+                        <div class="alert-heading" v-for="(input, i) in customer.InputErrors">
+                            <b v-if="i == 0" v-text="input"></b>
+                            <div v-if="i > 0" v-text="input"></div>
+                        </div>
+                    </div>
+                    @*  Edit Non-Password Info  *@
+                    <div v-if="!editPass">
+                        <div class="mb-4 border-bottom">
+                            @*  First -- Last  *@
+                            <div class="row">
+                                <div class="col-sm-6 col-12">
+                                    <div class="mb-4">
+                                        <label class="form-label">First name <r>*</r></label>
+                                        <input id="first" type="text" class="form-control" maxlength="15" v-model="customer.First" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-12">
+                                    <div class="mb-4">
+                                        <label class="form-label">Last name <r>*</r></label>
+                                        <input id="last" type="text" class="form-control" maxlength="20" v-model="customer.Last" />
+                                    </div>
                                 </div>
                             </div>
-                            <div class="col-sm-6 col-12">
-                                <div class="mb-4">
-                                    <label class="form-label">Last name <r>*</r></label>
-                                    <input id="last" type="text" class="form-control" maxlength="20" v-model="customer.Last" />
+                        </div>
+                        @*  Contact Info  *@
+                        <div class="mb-4 border-bottom">
+                            @*  Email -- Phone  *@
+                            <div class="row">
+                                <div class="col-sm-6 col-12">
+                                    <div class="mb-4">
+                                        <label class="form-label">Email <r>*</r></label>
+                                        <input id="email" type="text" class="form-control" maxlength="45" v-model="customer.Email" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-6 col-12">
+                                    <div class="mb-4">
+                                        <label class="form-label">Phone</label>
+                                        <input id="phone" type="tel" class="form-control" maxlength="20" v-model="customer.Phone" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @*  Address Info  *@
+                        <div class="mb-0">
+                            @*  Adr2 L1 -- Adr L2  *@
+                            <div class="row">
+                                <div class="col-sm-8 col-12">
+                                    <div class="mb-4">
+                                        <label class="form-label">Street Address <r>*</r></label>
+                                        <input id="adrL1" type="text" class="form-control" maxlength="35" v-model="customer.AdrL1" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 col-12">
+                                    <div class="mb-4">
+                                        <label class="form-label">Apt, suite, etc.</label>
+                                        <input id="adrL2" type="text" class="form-control" maxlength="35" v-model="customer.AdrL2" />
+                                    </div>
+                                </div>
+                            </div>
+                            @*  City -- State -- Zip  *@
+                            <div class="row mb-4 border-bottom">
+                                <div class="col-sm-5 col-12">
+                                    <div class="mb-4">
+                                        <label class="form-label">City <r>*</r></label>
+                                        <input id="city" type="text" class="form-control" maxlength="25" v-model="customer.City" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-3 col-6">
+                                    <div class="mb-4">
+                                        <label class="form-label">State <r>*</r></label>
+                                        <input id="state" type="text" class="form-control" maxlength="2" v-model="customer.State" />
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 col-6">
+                                    <div class="mb-4">
+                                        <label class="form-label">Zip <r>*</r></label>
+                                        <input id="zip" type="text" class="form-control" maxlength="5" v-model="customer.Zip" />
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    @*  Contact Info  *@
-                    <div class="mb-4 border-bottom">
-                        @*  Email -- Phone  *@
-                        <div class="row">
-                            <div class="col-sm-6 col-12">
-                                <div class="mb-4">
-                                    <label class="form-label">Email <r>*</r></label>
-                                    <input id="email" type="text" class="form-control" maxlength="45" v-model="customer.Email" />
-                                </div>
-                            </div>
-                            <div class="col-sm-6 col-12">
-                                <div class="mb-4">
-                                    <label class="form-label">Phone</label>
-                                    <input id="phone" type="tel" class="form-control" maxlength="20" v-model="customer.Phone" />
-                                </div>
-                            </div>
+                    @*  Edit Password  *@
+                    <div class="mb-4 border-bottom" v-if="editPass">
+                        <div class="small text-muted mb-4">
+                            To edit your account password, fill in the fields below and save
                         </div>
-                    </div>
-                    @*  Address Info  *@
-                    <div class="mb-0">
-                        @*  Adr2 L1 -- Adr L2  *@
-                        <div class="row">
-                            <div class="col-sm-8 col-12">
-                                <div class="mb-4">
-                                    <label class="form-label">Street Address <r>*</r></label>
-                                    <input id="adrL1" type="text" class="form-control" maxlength="35" v-model="customer.AdrL1" />
-                                </div>
-                            </div>
-                            <div class="col-sm-4 col-12">
-                                <div class="mb-4">
-                                    <label class="form-label">Apt, suite, etc.</label>
-                                    <input id="adrL2" type="text" class="form-control" maxlength="35" v-model="customer.AdrL2" />
-                                </div>
-                            </div>
+                        @*  Current Password  *@
+                        <div class="mb-4">
+                            <label class="form-label">Current Password</label>
+                            <input type="password" class="form-control" v-model="customer.oldPswd" />
                         </div>
-                        @*  City -- State -- Zip  *@
-                        <div class="row mb-4 border-bottom">
-                            <div class="col-sm-5 col-12">
-                                <div class="mb-4">
-                                    <label class="form-label">City <r>*</r></label>
-                                    <input id="city" type="text" class="form-control" maxlength="25" v-model="customer.City" />
-                                </div>
-                            </div>
-                            <div class="col-sm-3 col-6">
-                                <div class="mb-4">
-                                    <label class="form-label">State <r>*</r></label>
-                                    <input id="state" type="text" class="form-control" maxlength="2" v-model="customer.State" />
-                                </div>
-                            </div>
-                            <div class="col-sm-4 col-6">
-                                <div class="mb-4">
-                                    <label class="form-label">Zip <r>*</r></label>
-                                    <input id="zip" type="text" class="form-control" maxlength="5" v-model="customer.Zip" />
-                                </div>
-                            </div>
+                        @*  New Password  *@
+                        <div class="mb-4">
+                            <label class="form-label">New Password</label>
+                            <input type="password" class="form-control" v-model="customer.newPswd" />
                         </div>
-                    </div>
-                </div>
-                @*  Edit Password  *@
-                <div class="mb-4 border-bottom" v-if="editPass">
-                    @*  Current Password  *@
-                    <div class="mb-4">
-                        <label class="form-label">Current Password</label>
-                        <input type="password" class="form-control" v-model="customer.oldPswd" />
-                    </div>
-                    @*  New Password  *@
-                    <div class="mb-4">
-                        <label class="form-label">New Password</label>
-                        <input type="password" class="form-control" v-model="customer.newPswd" />
-                    </div>
-                    @*  Repeat New Password  *@
-                    <div class="mb-4">
-                        <label class="form-label">Repeat New Password</label>
-                        <input type="password" class="form-control" v-model="customer.repeatNewPswd" />
+                        @*  Repeat New Password  *@
+                        <div class="mb-4">
+                            <label class="form-label">Repeat New Password</label>
+                            <input type="password" class="form-control" v-model="customer.repeatNewPswd" />
+                        </div>
                     </div>
                 </div>
                 @*  Buttons  *@
@@ -190,7 +195,7 @@
                     <button class="btn btn-primary btn-rounded w-20 my-3 mx-1" type="button" v-on:click="save()">
                         Save
                     </button>
-                    <button class="btn btn-secondary btn-rounded w-20 my-3 mx-1" type="button" v-on:click="closeEditInfo()">
+                    <button class="btn btn-secondary btn-rounded w-20 my-3 mx-1 fw-bold" type="button" v-on:click="closeEditInfo()">
                         Close
                     </button>
                 </div>

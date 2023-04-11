@@ -29,7 +29,8 @@
                     content: null
                 }
             },
-            methods: { },
+            methods: { 
+            },
             created() {
                 if ($('#jsonProducts').attr('data-json') != "") {
                     this.products = JSON.parse($('#jsonProducts').attr('data-json'));
@@ -46,6 +47,7 @@
                             //{ label: 'Description', field: 'Descr', sort: false },
                             { label: 'Inserted', field: 'InsWhen', sort: true },
                             { label: 'Updated', field: 'UpdWhen', sort: true },
+                            { label: 'Status', field: 'Status', sort: true },
                             { label: '', field: 'edit', sort: false },
                         ],
                         rows: this.products.map((row) => {

@@ -4,7 +4,6 @@ using Microsoft.Data.SqlClient;
 using MyApp.App.ErrorHandling;
 using MyApp.App.Utils;
 using System.Data;
-using System.Reflection.PortableExecutable;
 using System.Text.Json;
 
 namespace MyApp.App.Biz
@@ -206,7 +205,6 @@ namespace MyApp.App.Biz
         /// <returns> json string </returns>
         public string Serialize() {
             Product prod = this;
-            prod.Cost = 0;
             return JsonSerializer.Serialize(prod);
         }
 
@@ -218,7 +216,6 @@ namespace MyApp.App.Biz
         public Product Deserialize(string json) {
             Product prod = JsonSerializer.Deserialize<Product>(json);
             if (prod != null) {
-                prod.Cost = 0;
                 return prod;
             }
             throw new AppException("json string resolved to null");

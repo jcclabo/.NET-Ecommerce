@@ -5,12 +5,14 @@
 <div class="container">
     <div class="px-2" v-if="development">
         <div class="alert alert-dismissible fade show mb-5" role="alert" data-mdb-color="secondary">
-            <h4 class="alert-heading mb-4 mt-1">This website is currently under devlopment</h4>
+            <h4 class="alert-heading mb-4 mt-1">This website is currently under development</h4>
             <p>
-                All transactions will be processed by PayPal in sandbox mode.
-                Sandbox testing uses the same API feature set as the live environment, and processes behave the same as they do on production servers.
-                Visit <a href="https://developer.paypal.com/braintree/docs/reference/general/testing" target="_blank">credit card testing</a>
-                for information about values to use in the credit card section of checkout.
+@*                All transactions will be processed by PayPal in sandbox mode.
+                Sandbox testing uses the same API feature set as the live environment, and sandbox processes behave the same as they do on production servers.*@
+                Real credit card values will not be processed at this time, 
+                though the implementation ensures that any data entered into the credit card or paypal section is not accessed or stored by shopclabo.com
+                <br /> Visit <a href="https://developer.paypal.com/braintree/docs/reference/general/testing" target="_blank">credit card testing</a>
+                for information about card values to use during checkout.
             </p>
             <button type="button" class="btn-close" data-mdb-dismiss="alert" aria-label="Close"></button>
         </div>

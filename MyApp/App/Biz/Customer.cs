@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using MyApp.App.ErrorHandling;
 using MyApp.App.Utils;
 using System.Data;
+using System.Globalization;
 using System.Text.Json;
 
 namespace MyApp.App.Biz
@@ -93,7 +94,7 @@ namespace MyApp.App.Biz
 
             var reader = sqlCmd.ExecuteReader();
             App.Biz.Customer customer = new();
-            customer.Email = email;
+            customer.Email = email.ToLower(new CultureInfo("en-US", false));
             int index = 0;
             try {
                 reader.Read();
@@ -182,12 +183,12 @@ namespace MyApp.App.Biz
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             sqlCmd.Parameters.Add("@first", SqlDbType.VarChar).Value = First;
             sqlCmd.Parameters.Add("@last", SqlDbType.VarChar).Value = Last;
-            sqlCmd.Parameters.Add("@email", SqlDbType.VarChar).Value = Email;
+            sqlCmd.Parameters.Add("@email", SqlDbType.VarChar).Value = Email.ToLower(new CultureInfo("en-US", false));
             sqlCmd.Parameters.Add("@phone", SqlDbType.VarChar).Value = Phone;
             sqlCmd.Parameters.Add("@adrL1", SqlDbType.VarChar).Value = AdrL1;
             sqlCmd.Parameters.Add("@adrL2", SqlDbType.VarChar).Value = AdrL2;
             sqlCmd.Parameters.Add("@city", SqlDbType.VarChar).Value = City;
-            sqlCmd.Parameters.Add("@state", SqlDbType.VarChar).Value = State;
+            sqlCmd.Parameters.Add("@state", SqlDbType.VarChar).Value = State.ToUpper(new CultureInfo("en-US", false));
             sqlCmd.Parameters.Add("@zip", SqlDbType.VarChar).Value = Zip;
             sqlCmd.Parameters.Add("@hashedPswd", SqlDbType.VarChar).Value = HashedPswd;
             sqlCmd.Parameters.Add("@insWhen", SqlDbType.DateTime).Value = DateTime.Now;
@@ -212,7 +213,9 @@ namespace MyApp.App.Biz
             }
         }
 
-        public string ValidateUpdateRequiredFields(string error) {
+        private bool ValidateUpdate() {
+            string errorInit = "Please make the following changes:\r\n";
+            string error = errorInit;
             string[] states = { "AK", "AL", "AR", "AS", "AZ", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "GU", "HI", "IA", "ID", "IL", "IN", "KS", "KY", "LA", "MA", "MD", "ME", "MI", "MN", "MO", "MP", "MS", "MT", "NC", "ND", "NE", "NH", "NJ", "NM", "NV", "NY", "OH", "OK", "OR", "PA", "PR", "RI", "SC", "SD", "TN", "TX", "UM", "UT", "VA", "VI", "VT", "WA", "WI", "WV", "WY" };
 
             if (string.IsNullOrWhiteSpace(First))
@@ -231,14 +234,6 @@ namespace MyApp.App.Biz
                 error += "• Enter a valid 5-digit zip code\r\n";
             if (string.IsNullOrWhiteSpace(Email) || !Email.Contains('@') || !Email.Contains('.'))
                 error += "• Enter a valid email address\r\n";
-            return error;
-        }
-
-        private bool ValidateUpdate() {
-            string errorInit = "Please make the following changes:\r\n";
-            string error = errorInit;
-
-            error = ValidateUpdateRequiredFields(error);
 
             if (error != errorInit) {
                 InputErrors = error.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
@@ -248,11 +243,9 @@ namespace MyApp.App.Biz
             }
         }
 
-        private bool ValidateUpdate(string newPswd, string repeatNewPswd) {
+        private bool ValidateUpdatePassword(string newPswd, string repeatNewPswd) {
             string errorInit = "Please make the following changes:\r\n";
             string error = errorInit;
-
-            error = ValidateUpdateRequiredFields(error);
 
             error = ValidateNewPassword(error, newPswd, repeatNewPswd);
 
@@ -275,12 +268,12 @@ namespace MyApp.App.Biz
             sqlCmd.Parameters.Add("@customerId", SqlDbType.Int).Value = id;
             sqlCmd.Parameters.Add("@first", SqlDbType.VarChar).Value = First;
             sqlCmd.Parameters.Add("@last", SqlDbType.VarChar).Value = Last;
-            sqlCmd.Parameters.Add("@email", SqlDbType.VarChar).Value = Email;
+            sqlCmd.Parameters.Add("@email", SqlDbType.VarChar).Value = Email.ToLower(new CultureInfo("en-US", false));
             sqlCmd.Parameters.Add("@phone", SqlDbType.VarChar).Value = Phone;
             sqlCmd.Parameters.Add("@adrL1", SqlDbType.VarChar).Value = AdrL1;
             sqlCmd.Parameters.Add("@adrL2", SqlDbType.VarChar).Value = AdrL2;
             sqlCmd.Parameters.Add("@city", SqlDbType.VarChar).Value = City;
-            sqlCmd.Parameters.Add("@state", SqlDbType.VarChar).Value = State;
+            sqlCmd.Parameters.Add("@state", SqlDbType.VarChar).Value = State.ToUpper(new CultureInfo("en-US", false));
             sqlCmd.Parameters.Add("@zip", SqlDbType.VarChar).Value = Zip;
             sqlCmd.Parameters.Add("@hashedPswd", SqlDbType.VarChar).Value = GetById(id).HashedPswd;
             sqlCmd.Parameters.Add("@upd", SqlDbType.DateTime).Value = DateTime.Now;
@@ -304,42 +297,25 @@ namespace MyApp.App.Biz
             }
         }
 
-        public bool Update(int id, string oldPswd, string newPswd, string repeatNewPswd) {
+        public bool UpdatePassword(int id, string oldPswd, string newPswd, string repeatNewPswd) {
             if (!Authenticator.CustomerAuth(Email, oldPswd)) {
                 Error = "The current password you entered is incorrect";
                 return false;
             }
 
-            if (!ValidateUpdate(newPswd, repeatNewPswd))
+            if (!ValidateUpdatePassword(newPswd, repeatNewPswd))
                 return false;
 
-            string sql = @"UPDATE customers SET first=@first, last=@last, email=@email, phone=@phone, adrL1=@adrL1, adrL2=@adrL2, " +
-                "city=@city, state=@state, zip=@zip, hashedPswd=@hashedPswd, updWhen=@upd WHERE customerId=@customerId";
+            string sql = @"UPDATE customers SET hashedPswd=@hashedPswd, updWhen=@upd WHERE customerId=@customerId";
 
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             sqlCmd.Parameters.Add("@customerId", SqlDbType.Int).Value = id;
-            sqlCmd.Parameters.Add("@first", SqlDbType.VarChar).Value = First;
-            sqlCmd.Parameters.Add("@last", SqlDbType.VarChar).Value = Last;
-            sqlCmd.Parameters.Add("@email", SqlDbType.VarChar).Value = Email;
-            sqlCmd.Parameters.Add("@phone", SqlDbType.VarChar).Value = Phone;
-            sqlCmd.Parameters.Add("@adrL1", SqlDbType.VarChar).Value = AdrL1;
-            sqlCmd.Parameters.Add("@adrL2", SqlDbType.VarChar).Value = AdrL2;
-            sqlCmd.Parameters.Add("@city", SqlDbType.VarChar).Value = City;
-            sqlCmd.Parameters.Add("@state", SqlDbType.VarChar).Value = State;
-            sqlCmd.Parameters.Add("@zip", SqlDbType.VarChar).Value = Zip;
             sqlCmd.Parameters.Add("@hashedPswd", SqlDbType.VarChar).Value = HashPassword(this, newPswd);
             sqlCmd.Parameters.Add("@upd", SqlDbType.DateTime).Value = DateTime.Now;
 
             try {
                 int affected = sqlCmd.ExecuteNonQuery();
                 return true;
-            } catch (SqlException sqlEx) {
-                Console.WriteLine(sqlEx.ToString());
-                // check for error inserting duplicate emails
-                if (sqlEx.Number == 2601 && sqlEx.Message.Contains("email"))
-                    Error = "An account already exists with the email you entered";
-                else Error = "We were unable to update your account at this time, please try again later";
-                return false;
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
                 Error = "We were unable to update your account at this time, please try again later";
