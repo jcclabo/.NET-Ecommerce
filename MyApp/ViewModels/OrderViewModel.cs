@@ -1,6 +1,4 @@
 ﻿
-using Braintree;
-
 namespace MyApp.Models
 {
     public class OrderViewModel

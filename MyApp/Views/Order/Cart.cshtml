@@ -9,10 +9,10 @@
             @*  Product list  *@
             <div class="mb-4" v-for="line in order.Lines" :key="line.ProductId">
                 @*  Order Line  *@
-                <div :id="line.ProductId" class="card rounded-6 p-2 py-0">
+                <div :id="line.ProductId" class="card rounded-6 p-2 py-0 pt-2 pt-sm-0">
                     @*  Phones: img above row  *@
                     <div class="d-xs-block d-sm-none">
-                        <div class="bg-image ripple rounded-5 mb-4 d-block" data-ripple-color="light">
+                        <div class="bg-image ripple mb-4 d-block" data-ripple-color="light">
                             <img class="w-100" :src="line.ImgUrl" :alt="line.Name" />
                             <a>
                                 <div class="hover-overlay">
@@ -59,18 +59,22 @@
                             @*  Qty   *@
                             <div class="">
                                 <div class="d-flex justify-content-end">
-                                    <a class="me-2" v-on:click="shwQtyBtns=!shwQtyBtns" v-if="!shwQtyBtns">Edit</a>
-                                    <a class="me-2" v-on:click="shwQtyBtns=!shwQtyBtns" v-if="shwQtyBtns">Hide</a>
+                                    <a class="me-2" v-on:click="shwQtyBtns=false" v-if="shwQtyBtns && shwQtyBtnsKey == line.ProductId">
+                                        Hide
+                                    </a>
+                                    <a class="me-2" v-on:click="qtyEdit(line.ProductId)" v-else>
+                                        Edit
+                                    </a>
                                     <p class="me-2">
                                         <span class="me-1">Qty:</span><span v-text="line.Qty"></span>
                                     </p>
                                 </div>
-                                <div class="d-flex justify-content-end" v-if="shwQtyBtns">
-                                    <button class="btn btn-secondary text-primary rounded-3 border-0 me-1 p-2" v-on:click="qtyPlus(line.ProductId)">
-                                        <b>+ 1</b>
+                                <div class="d-flex justify-content-end" v-if="shwQtyBtns && shwQtyBtnsKey == line.ProductId">
+                                    <button class="btn btn-secondary text-primary rounded-3 border-0 me-2 p-2" v-on:click="qtyMinus(line.ProductId)">
+                                        <b>-1</b>
                                     </button>
-                                    <button class="btn btn-secondary text-primary rounded-3 border-0 p-2" v-on:click="qtyMinus(line.ProductId)">
-                                        <b>- 1</b>
+                                    <button class="btn btn-secondary text-primary rounded-3 border-0 p-2" v-on:click="qtyPlus(line.ProductId)">
+                                        <b>+1</b>
                                     </button>
                                 </div>
                                 <p class="d-flex justify-content-end mb-2 me-2" v-else>
@@ -140,7 +144,8 @@
             data: function () {
                 return {
                     order: null,
-                    shwQtyBtns: false
+                    shwQtyBtns: false,
+                    shwQtyBtnsKey: null
                 }
             }, 
             methods: {
@@ -151,6 +156,10 @@
                         dataType: "json",
                         data: { "productId": productId },
                         success: function (result) {
+                            var lineRmv = app.order.Lines.find(obj => {
+                                return obj.ProductId == productId;
+                            });
+                            app.subtractFromCartCount(lineRmv.Qty);
                             app.setOrderFromJson(result);
                         },
                         error: function (req, status, error) {
@@ -166,6 +175,7 @@
                         dataType: "json",
                         data: { "productId": productId },
                         success: function (result) {
+                            app.addToCartCount(1);
                             app.setOrderFromJson(result);
                         },
                         error: function (req, status, error) {
@@ -181,7 +191,8 @@
                         dataType: "json",
                         data: { "productId": productId },
                         success: function (result) {
-                            app.setOrderFromJson(result);
+                            app.subtractFromCartCount(1);
+                            app.setOrderFromJson(result); 
                         },
                         error: function (req, status, error) {
                             alert("error");
@@ -191,6 +202,10 @@
                 },
                 setOrderFromJson: function (json) {
                     this.order = JSON.parse(json);
+                },
+                qtyEdit: function (key) {
+                    app.shwQtyBtns = true;
+                    app.shwQtyBtnsKey = key;
                 }
             },
             created() {

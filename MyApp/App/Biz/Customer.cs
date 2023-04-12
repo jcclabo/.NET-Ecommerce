@@ -349,5 +349,84 @@ namespace MyApp.App.Biz
             throw new AppException("json string resolved to null");
         }
 
+
+        // quadratic worst case // needs improvement
+        public List<Product> GetCustomizedProductList() {
+            // find most similar customer based purchases
+            // iterate through all logged in purchases 
+            List<OrderLine> allLines = OrderLine.GetList();
+            List<OrderLine> myLines = allLines.FindAll(l => l.CustomerId == CustomerId);
+            List<Product> products = Product.GetActiveProducts();
+
+            if(myLines.Count > 0) {
+                allLines = allLines.OrderByDescending(l => l.CustomerId).ToList();
+
+                OrderLine[] lines = allLines.ToArray();
+                int i = 0;
+
+                int mostSimilar = lines[i].CustomerId; // customer id 
+                int greatestCount = 0; // of same products purchased
+
+                int currCustomerId = lines[i].CustomerId;
+
+                // compare to every other customers purchases
+                while (currCustomerId > 0) {
+                    int count = 0; // current number of same products purchased
+
+                    while (currCustomerId == lines[i].CustomerId) {
+                        // do not compare against this customer
+                        if (currCustomerId != this.CustomerId) {
+                            if (myLines.Exists(l => l.ProductId == lines[i].ProductId)) {
+                                count++;
+                            }
+                        }
+                        i++;
+                    }
+                    if (count > greatestCount) {
+                        greatestCount = count;
+                        mostSimilar = currCustomerId;
+                    }
+                    currCustomerId = lines[i].CustomerId; // update current
+                    if (greatestCount == myLines.Count)
+                        break;
+                }
+
+                List<OrderLine> mostSimilarList = allLines.FindAll(l => l.CustomerId == mostSimilar);
+                List<OrderLine> activeSimilarList = new List<OrderLine>(mostSimilarList);
+
+                // don't include inactive products in list from simiilar customer
+                foreach (OrderLine line in mostSimilarList) {
+                    if (!products.Any(p => p.ProductId == line.ProductId)) {
+                        activeSimilarList.Remove(line);
+                    }
+                }
+
+                // move non purchased products (bought by the similar customer) to the top of the list
+                // and purchased prods in the middle with less relevant prods at the bottom
+
+                List<int> orderByTop = new List<int>();
+                List<int> orderByBottom = new List<int>();
+
+                foreach (OrderLine other in activeSimilarList) {
+                    if (!myLines.Any(l => l.ProductId == other.ProductId)) {
+                        orderByTop.Add(other.ProductId);
+                    } else {
+                        orderByBottom.Add(other.ProductId);
+                    }
+                }
+                int[] orderByArray = orderByTop.Concat(orderByBottom).ToArray();
+
+                for (int b = 0; b < orderByArray.Length; b++) {
+                    var e = products.Single(x => x.ProductId == orderByArray[b]);
+                    products.Remove(e);
+                    products.Insert(b, e);
+                }
+            }
+
+            return products;
+        }
+
+
+
     }
 }

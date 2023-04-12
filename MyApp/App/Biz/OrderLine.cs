@@ -31,7 +31,7 @@ namespace MyApp.App.Biz
             Descr = "";
         }
 
-        public static OrderLine GetByOrderLineId(int id) {
+        public static OrderLine GetById(int id) {
             string sql = @"SELECT orderId, customerId, productId, name, qty, unitPrice, orderDate FROM orderLines WHERE orderLineId = @orderLineId";
 
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
@@ -88,7 +88,7 @@ namespace MyApp.App.Biz
             }
         }
 
-        public static List<OrderLine> GetAllOrderLines() {
+        public static List<OrderLine> GetList() {
             string sql = @"SELECT orderId, customerId, productId, name, qty, unitPrice, orderDate FROM orderLines";
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             SqlDataReader? reader = null;
@@ -114,7 +114,7 @@ namespace MyApp.App.Biz
             }
         }
 
-        public static List<OrderLine> GetAllOrderLines(int orderId) {
+        public static List<OrderLine> GetList(int orderId) {
             string sql = @"SELECT customerId, productId, name, qty, unitPrice, orderDate FROM orderLines where orderId=@orderId";
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             sqlCmd.Parameters.Add("@orderId", SqlDbType.Int).Value = orderId;
@@ -144,6 +144,8 @@ namespace MyApp.App.Biz
                 UseSql.Close(conn, sqlCmd);
             }
         }
+
+
 
     }
 }

@@ -3,13 +3,13 @@
     ViewData["Title"] = "Product Report";
 }
 <div class="container">
-    <div class="d-flex justify-content-between">
-        <h5 class="my-auto">Product Report</h5>
-        <a href="/admin">
+    <div class="d-flex justify-content-between mb-4 border-bottom">
+        <h5 class="my-auto text-dark">Product Report</h5>
+        @*<a href="/admin">
             <div class="btn btn-outline-primary btn-rounded fw-bold w-20 my-3 mx-1">
                 Dashboard
             </div>
-        </a>
+        </a>*@
     </div>
     <div id="table" style="font-family:'Times New Roman'" data-mdb-striped="true" data-mdb-fixed-header="false" data-mdb-loader-class="bg-secondary" data-mdb-border-color="secondary"
          data-mdb-full-pagination="true" 
@@ -53,7 +53,7 @@
                         rows: this.products.map((row) => {
                             return {
                                 ...row,
-                                edit: `<a href="/admin/product?productId=${row.ProductId}" target="_blank">Edit</a>`
+                                edit: `<a href="/admin/product?productId=${row.ProductId}">Edit</a>`
                             };
                         }),
                     };

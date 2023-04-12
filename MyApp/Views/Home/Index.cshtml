@@ -4,16 +4,13 @@
 }
 <div class="container">
     <div class="px-2" v-if="development">
-        <div class="alert alert-dismissible fade show mb-5" role="alert" data-mdb-color="secondary">
-            <h4 class="alert-heading mb-4 mt-1">This website is currently under development</h4>
-            <p>
-@*                All transactions will be processed by PayPal in sandbox mode.
-                Sandbox testing uses the same API feature set as the live environment, and sandbox processes behave the same as they do on production servers.*@
-                Real credit card values will not be processed at this time, 
-                though the implementation ensures that any data entered into the credit card or paypal section is not accessed or stored by shopclabo.com
-                <br /> Visit <a href="https://developer.paypal.com/braintree/docs/reference/general/testing" target="_blank">credit card testing</a>
-                for information about card values to use during checkout.
-            </p>
+        <div class="alert alert-dismissible fade show mb-5" role="alert" data-mdb-color="info">
+            <h5 class="alert-heading mb-4 mt-1">This website is currently under development</h5>
+            <div>
+                <!-- All transactions will be processed by PayPal in sandbox mode. Integration information can be found at https://developer.paypal.com/braintree/docs/start/overview -->
+                <!-- Sandbox testing uses the same API feature set as the live environment, and sandbox processes behave the same as they do on production servers. -->
+                All orders are treated as tests. Formal approval is needed before this site can be used to sell products through its payment processing integration.
+            </div>
             <button type="button" class="btn-close" data-mdb-dismiss="alert" aria-label="Close"></button>
         </div>
     </div>
@@ -34,16 +31,12 @@
                         </div>
                         @*  Product content  *@
                         <div class="px-3 text-reset d-block px-3">
-                            <h5 class="fw-bold mb-2">@prod.Name</h5>
-                            @*<p class="fw-bold mb-2">@prod.Name</p>*@
+                            <p class="fw-bold mb-2">@prod.Name</p>
                             <p class="text-muted small mb-2">@prod.Descr</p>
                             <div class="row mt-3 text-nowrap">
                                 <h5 class="fw-bold mb-3 col-4 col-xs-4 col-lg-4">
                                     <span class="align-middle inline-block">@prod.Price.ToString("c")</span>
                                 </h5>
-                                @*<h5 class="fw-bold mb-3 col-4 ">
-                                    @prod.Price.ToString("c")
-                                </h5>*@
                                 <div class="inline-block col-8 col-xs-8 col-lg-8 d-lg-block d-none">
                                     <button type="button" class="btn btn-primary btn-rounded py-2 d-flex justify-content-end"
                                             onclick="addToCart(@prod.ProductId)">
@@ -70,8 +63,6 @@
 
 @section Scripts {
     <script>
-        var development = true;
-
         function addToCart(productId) {
             $.ajax({
                 type: "POST",
@@ -79,6 +70,7 @@
                 dataType: "json",
                 data: { "productId": productId },
                 success: function (result) {
+                    app.addToCartCount(1);
                 },
                 error: function (req, status, error) {
                     alert(req);

@@ -2,27 +2,18 @@
 @{
     ViewData["Title"] = "Order Report";
 }
-@section Styles {
-    <style>
-        body .container {
-            width: 90%;
-            max-width: none;
-            padding: 0;
-        }
-    </style>
-}
 
 <div class="container">
-    <div class="d-flex justify-content-between">
-        <h5 class="my-auto">Order Report</h5>
-        <a href="/admin">
+    <div class="d-flex justify-content-between mb-4 border-bottom">
+        <h5 class="my-auto text-dark">Order Report</h5>
+        @*<a href="/admin">
             <div class="btn btn-outline-primary btn-rounded fw-bold w-20 my-3 mx-1">
                 Dashboard
             </div>
-        </a>
+        </a>*@
     </div>
     <div id="table" data-mdb-striped="true" data-mdb-fixed-header="false" data-mdb-loader-class="bg-secondary" data-mdb-border-color="secondary"
-         data-mdb-full-pagination="true" 
+         data-mdb-full-pagination="true"
          entriesOptions=[10, 25, 50, 200]> <!-- temporay hack for entriesOptions, which was necessary for pagination. Tired many other ways to get this to work but documentation is limited and it would not cooperate -->
     </div>
 
@@ -36,7 +27,7 @@
             data: function () {
                 return {
                     orders: null,
-                    content: null
+                    content: null,
                 }
             },
             methods: { 
@@ -58,17 +49,18 @@
                             { label: 'City', field: 'City', sort: true },
                             { label: 'State', field: 'State', sort: true },
                             { label: 'Zip', field: 'Zip', sort: true },
-                            { label: 'Subtotal', field: 'Subtotal', sort: true },
-                            { label: 'Shipping', field: 'Shipping', sort: true },
+                            //{ label: 'Subtotal', field: 'Subtotal', sort: true },
+                            //{ label: 'Shipping', field: 'Shipping', sort: true },
                             { label: 'Total', field: 'Total', sort: true },
-                            { label: 'Email', field: 'Email', sort: false },
-                            { label: 'Phone', field: 'Phone', sort: true },
-                            { label: 'Order Date', field: 'OrderDate', sort: true, },
+                            //{ label: 'Email', field: 'Email', sort: true },
+                            //{ label: 'Phone', field: 'Phone', sort: true },
+                            { label: 'Order Date', field: 'OrderDate', sort: true },
+                            { label: '', field: 'view', sort: true },
                         ],
                         rows: this.orders.map((row) => {
                             return {
                                 ...row,
-                                edit: `<a href="/admin/order-report?orderId=${row.OrderId}" target="_blank">View</a>`
+                                view: `<a href="/admin/order-report/order-details?orderId=${row.OrderId}">View</a>`
                             };
                         }),
                     };

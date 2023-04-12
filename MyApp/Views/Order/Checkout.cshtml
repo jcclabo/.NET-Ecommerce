@@ -4,10 +4,31 @@
 }
 <div class="container">
     <div class="my-3" v-if="order.Lines[0] != null">
+        <div class="px-2" v-if="development">
+            <div class="alert alert-dismissible fade show mb-5" role="alert" data-mdb-color="info">
+                <h5 class="alert-heading mb-4 mt-1">Real credit cards cannot be used to place an order at this time</h5>
+                <div>
+                    <!-- All transactions will be processed by PayPal in sandbox mode. Integration information can be found at https://developer.paypal.com/braintree/docs/start/overview -->
+                    <!-- Sandbox testing uses the same API feature set as the live environment, and sandbox processes behave the same as they do on production servers. -->
+                    <!-- Entries into the credit card or PayPal section are protected and inaccessible to shopclabo.com -->
+                    Use the test credit card: 4111111111111111 (4 then 15 1s) and any expiration date in the future
+                </div>
+                <button type="button" class="btn-close" data-mdb-dismiss="alert" aria-label="Close"></button>
+            </div>
+        </div>
         <div class="row">
             <form id="payment-form" method="POST" action="/checkout/ajax-ins-order" class="col-lg-6 pe-lg-4 mb-5 mb-lg-0">
+                @*  Failed to load Braintree  *@
+                <div class="alert" data-mdb-color="danger" v-if="braintreeLoadFail">
+                    <h5 class="alert-heading">
+                        Payment processing temporarily unavailable
+                    </h5>
+                    <div>
+                        You may encounter this issue if you are using a VPN
+                    </div>
+                </div>
                 @*  Form Error Message  *@
-                <div id="submit" class="alert" data-mdb-color="danger" v-if="order.InputErrors[0]">
+                <div class="alert" data-mdb-color="danger" v-if="order.InputErrors[0]">
                     <div class="alert-heading" v-for="(input, i) in order.InputErrors">
                         <b v-if="i == 0" v-text="input"></b>
                         <div v-if="i > 0" v-text="input"></div>
@@ -208,43 +229,16 @@
 
 
 @section Scripts {
-    <script src="https://js.braintreegateway.com/web/dropin/1.36.1/js/dropin.min.js"></script>
-    <script>
-        var clientToken = "@Model.ClientToken";
-        var form = document.querySelector('#payment-form');
-
-        braintree.dropin.create({
-            authorization: clientToken,
-            container: '#bt-dropin',
-            paypal: {
-                flow: 'vault'
-            }
-        }, function (createErr, instance) {
-            submitButton.addEventListener('click', function (event) {
-                event.preventDefault();
-                instance.requestPaymentMethod(function (err, payload) {
-                    if (err) {
-                        app.paymentInputError = "A valid payment method is needed to process your order";
-                        return;
-                    }
-                    // Add the nonce to the form and submit
-                    //document.querySelector('#nonce').value = payload.nonce;
-                    //form.submit();
-
-                    // Add the nonce to the order and make the ajax request
-                    app.order.paymentMethodNonce = payload.nonce;
-                    app.insOrder();  
-                });
-            });
-        });
-    </script>
-
+    @*<script src="https://js.braintreegateway.com/web/dropin/1.36.1/js/dropin.min.js" 
+            onerror="alert('Error to load payment processing service:<br/>You may encounter this issue if you are using a VPN')">
+    </script>*@
     <script>
         var pageMixin = {
             data: function () {
                 return {
                     order: null,
-                    paymentInputError: null
+                    paymentInputError: null,
+                    braintreeLoadFail: false
                 }
             },
             methods: {
@@ -275,5 +269,41 @@
         };
 
         mixinArray.push(pageMixin);
+    </script>
+
+    <script>
+        var clientToken = "@Model.ClientToken";
+        var form = document.querySelector('#payment-form');
+
+        $(document).ready(function () {
+            $.getScript("https://js.braintreegateway.com/web/dropin/1.36.1/js/dropin.min.js", function () {
+                braintree.dropin.create({
+                    authorization: clientToken,
+                    container: '#bt-dropin',
+                    paypal: {
+                        flow: 'vault'
+                    }
+                }, function (createErr, instance) {
+                    submitButton.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        instance.requestPaymentMethod(function (err, payload) {
+                            if (err) {
+                                app.paymentInputError = "A valid payment method is needed to process your order";
+                                return;
+                            }
+                            // Add the nonce to the form and submit
+                            //document.querySelector('#nonce').value = payload.nonce;
+                            //form.submit();
+
+                            // Add the nonce to the order and make the ajax request
+                            app.order.paymentMethodNonce = payload.nonce;
+                            app.insOrder();
+                        });
+                    });
+                });
+            }).fail(function () {
+                app.braintreeLoadFail = true;
+            });
+        });
     </script>
 }

@@ -1,4 +1,4 @@
-﻿ @model HomeViewModel
+﻿@model HomeViewModel
 @{
     ViewData["Title"] = "My Account";
 }
@@ -20,7 +20,13 @@
         @*  Display account info  *@
         <div class="col-lg-6 col-12 p-4">
             <div v-if="customer.addedAccountInfo">
-                <h5 class="mb-4">Account Info</h5>
+                <div class="d-flex justify-content-between">
+                    <h5 class="mb-4 my-auto">Account Info</h5>
+                    <button class="btn btn-outline-primary btn-rounded fw-bold px-3 mb-3 mx-1 d-block d-lg-none" type="button"
+                            v-on:click="signOut()">
+                        Sign Out
+                    </button>
+                </div>
                 <span v-text="customer.First"></span> <span v-text="customer.Last"></span>
                 <div v-text="customer.AdrL1"></div>
                 <div v-text="customer.AdrL2"></div>
@@ -35,7 +41,7 @@
                 <p> Click on <b> Add Account Info </b> to finish setting things up </p>
             </div>
             @*  Sign out  *@
-            <div class="mt-5">
+            <div class="mt-5 d-none d-lg-block">
                 <button class="btn btn-outline-primary btn-rounded fw-bold px-3 mb-3 mx-1" type="button"
                         v-on:click="signOut()">
                     Sign Out

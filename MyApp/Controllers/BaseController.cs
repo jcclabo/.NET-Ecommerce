@@ -18,12 +18,16 @@ namespace MyApp.Controllers
                 ViewBag.SignedIn = false;
             }
             if (HttpContext.Session.GetString("order") != null) {
+                
                 Order order = new Order();
                 string orderJson = HttpContext.Session.GetString("order");
                 order = order.Deserialize(orderJson);
-                ViewBag.NumOrderLines = order.Lines.Count;
+                ViewBag.CartProductCount = 0;
+                foreach (OrderLine ol in order.Lines) {
+                    ViewBag.CartProductCount += ol.Qty;
+                }
             } else {
-                ViewBag.NumOrderLines = 0;
+                ViewBag.CartProductCount = 0;
             }
             base.OnActionExecuting(filterContext);
         }

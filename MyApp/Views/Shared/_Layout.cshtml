@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="/lib/mdb5/css/mdb.min.css" />
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Mulish" />
-    @RenderSection("Styles", required: false)
 </head>
 <body class="fonts-mulish">
 
@@ -31,10 +30,10 @@
                         {
                             <div>
                                 <a href="/admin/order-report" class="nav-link text-white d-inline-block">
-                                    Order Rpt
+                                    Orders
                                 </a>
                                 <a href="/admin/product-report" class="nav-link text-white d-inline-block">
-                                    Product Rpt
+                                    Products
                                 </a>
                                 <a href="/admin/product" class="nav-link text-white d-inline-block">
                                     Product Editor
@@ -54,12 +53,14 @@
                                 <i class="fas fa-user-circle text-white me-1"></i>
                                 Login
                             </a>
-                         }
-                        <a href="/cart" class="nav-link text-white text-nowrap">
-                            <i class="fas fa-shopping-cart text-white me-1"></i>
-                            Cart
-                            <span class="badge bg-danger ms-2">@ViewBag.NumOrderLines</span>
-                        </a>
+                        }
+                            <a href="/cart" class="nav-link text-white text-nowrap">
+                                <i class="fas fa-shopping-cart text-white me-1"></i>
+                                Cart
+                                <span class="badge bg-danger ms-2">
+                                    <span id="cartProductCount"></span>
+                                </span>
+                            </a>
                         </div>
                     </div>
                 </div>
@@ -84,7 +85,9 @@
                     <a href="/cart" class="nav-link text-white">
                         <i class="fas fa-shopping-cart me-1"></i>
                         Cart
-                        <span class="badge bg-danger ms-2">@ViewBag.NumOrderLines</span>
+                        <span class="badge bg-danger ms-2">
+                            <span id="mobileCartProductCount"></span>
+                        </span>
                     </a>
                 </div>
             </nav>
@@ -96,21 +99,21 @@
                             Home
                         </a>
                     </div>
-                    @if (ViewBag.SignedIn) {
-                        <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
-                            <a href="/myaccount" class="nav-link text-dark fw-bold">
-                                <i class="fas fa-user-circle me-1"></i>
-                                My Account
-                            </a>
-                        </div>
-                    } else {
-                        <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
-                            <a href="/myaccount" class="nav-link text-dark fw-bold">
-                                <i class="fas fa-user-circle me-1"></i>
-                                Login
-                            </a>
-                        </div>
-                    }
+                @if (ViewBag.SignedIn) {
+                    <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                        <a href="/myaccount" class="nav-link text-dark fw-bold">
+                            <i class="fas fa-user-circle me-1"></i>
+                            My Account
+                        </a>
+                    </div>
+                } else {
+                    <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                        <a href="/myaccount" class="nav-link text-dark fw-bold">
+                            <i class="fas fa-user-circle me-1"></i>
+                            Login
+                        </a>
+                    </div>
+                }
                     <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
                         <a href="/cart" class="nav-link text-dark fw-bold">
                             <i class="fas fa-shopping-cart me-1"></i>
@@ -210,7 +213,9 @@
     </script>
      
     <script type="text/javascript">
-
+        var development = true;
+        var CartProductCount = @ViewBag.CartProductCount;
+        
         var app = new Vue({
             el: '#app',
             mixins: mixinArray,
@@ -238,9 +243,23 @@
                     if (month == 12 && day == 31 && year == 1969) 
                         return '-';
                     else return `${month}/${day}/${year}`;
+                },
+                addToCartCount: function (amt) {
+                    CartProductCount += amt;
+                    app.updateCartCount();
+                },
+                subtractFromCartCount: function (amt) {
+                    CartProductCount -= amt;
+                    app.updateCartCount();
+                },
+                updateCartCount: function () {
+                    document.getElementById("cartProductCount").innerHTML = CartProductCount;
+                    document.getElementById("mobileCartProductCount").innerHTML = CartProductCount;
                 }
             }
         });
+
+        app.updateCartCount();
     </script>
 
 </body>

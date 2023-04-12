@@ -1,0 +1,113 @@
+﻿@model AdminViewModel
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between mb-4 border-bottom">
+        <h5 class="my-auto text-dark">Order Details</h5>
+        @*<a href="/admin">
+            <div class="btn btn-outline-primary btn-rounded fw-bold w-20 my-3 mx-1">
+                Dashboard
+            </div>
+        </a>*@
+    </div>
+
+    <div class="mb-4">
+        <div id="order-table" class="mb-6 border-bottom"
+             data-mdb-fixed-header="false" data-mdb-pagination="false">
+        </div>
+    </div>
+
+    <div class="row pt-5">
+        <div class="col-6 d-flex justify-content-center">
+            <div class="d-inline-block">
+                <div class="border-bottom text-dark text-center mb-4">
+                    <h5>Products purchased</h5>
+                </div>
+                <div id="lines-table" class="mb-6 border-bottom"
+                     data-mdb-fixed-header="false" data-mdb-pagination="false">
+                </div>
+            </div>
+        </div>
+        <div class="col-6 d-flex justify-content-center">
+            <div class="d-inline-block">
+                <div class="border-bottom text-dark text-center mb-4">
+                    <h5>Contact Info</h5>
+                </div>
+                <div id="contact-table" class="mb-6 border-bottom"
+                     data-mdb-fixed-header="false" data-mdb-pagination="false">
+                </div>
+            </div>
+        </div>
+    </div>
+        
+
+    <span id="jsonOrders" class="d-none" data-json='@Model.Json'></span>
+</div>
+
+@section Scripts {
+    <script>
+
+        var pageMixin = {
+            data: function () {
+                return {
+                    orders: null
+                }
+            },
+            methods: {
+                
+            },
+            created() {
+                if ($('#jsonOrders').attr('data-json') != "") {
+                    this.orders = JSON.parse($('#jsonOrders').attr('data-json'));
+                    // format dates
+                    for (var i = 0; i < this.orders.length; i++) {
+                        this.orders[i].OrderDate = this.formatDate(this.orders[i].OrderDate);
+                    }
+                    var orderContent = {
+                        columns: [
+                            { label: 'Order ID', field: 'OrderId', sort: false },
+                            { label: 'First', field: 'First', sort: false },
+                            { label: 'Last', field: 'Last', sort: false },
+                            { label: 'Address Line 1', field: 'AdrL1', sort: false },
+                            { label: 'Line 2', field: 'AdrL2', sort: false },
+                            { label: 'City', field: 'City', sort: false },
+                            { label: 'State', field: 'State', sort: false },
+                            { label: 'Zip', field: 'Zip', sort: false },
+                            //{ label: 'Subtotal', field: 'Subtotal', sort: 'false' },
+                            //{ label: 'Shipping', field: 'Shipping', sort: 'false' },
+                            { label: 'Total', field: 'Total', sort: false },
+                            { label: 'Order Date', field: 'OrderDate', sort: false },
+                        ],
+                        rows: this.orders,
+                    };
+                    new mdb.Datatable(document.getElementById('order-table'), orderContent);
+
+                    var linesContent = {
+                        columns: [
+                            { label: 'Product ID', field: 'ProductId', sort: false },
+                            { label: 'Name', field: 'Name', sort: false },
+                            { label: 'Quantity', field: 'Qty', sort: false },
+                            { label: 'Price', field: 'UnitPrice', sort: false },
+                        ],
+                        rows: this.orders[0].Lines,
+                    };
+                    new mdb.Datatable(document.getElementById('lines-table'), linesContent);
+
+                    var contactContent = {
+                        columns: [
+                            { label: 'Customer ID', field: 'CustomerId', sort: false },
+                            { label: 'Email', field: 'Email', sort: false },
+                            { label: 'Phone', field: 'Phone', sort: false },
+                        ],
+                        rows: this.orders,
+                    };
+                    new mdb.Datatable(document.getElementById('contact-table'), contactContent);
+                }
+            }
+        };
+
+        mixinArray.push(pageMixin);
+    </script>
+}

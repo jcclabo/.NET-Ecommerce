@@ -63,7 +63,7 @@ namespace MyApp.App.Biz
             IgnoreDataMemberAttribute nonce = new IgnoreDataMemberAttribute();
         }
 
-        public Order GetById(int id, bool getLines) {
+        public static Order GetById(int id, bool getLines) {
             string sql = @"SELECT customerId, first, last, email, phone, adrL1, adrL2, city, state, zip, subtotal, shipping, total, orderDate, transactionId, paymentMethodNonce " +
                 "FROM orders WHERE orderId = @orderId";
 
@@ -94,7 +94,7 @@ namespace MyApp.App.Biz
                 order.paymentMethodNonce = reader.GetString(index++);
                 reader.Close();
                 if (getLines)
-                    order.Lines = OrderLine.GetAllOrderLines(order.OrderId);
+                    order.Lines = OrderLine.GetList(order.OrderId);
                 return order;
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
@@ -197,7 +197,7 @@ namespace MyApp.App.Biz
         /// <summary>
         /// Does not get paymentMethodNonce
         /// </summary>
-        public static List<Order> GetAllOrders(bool getLines) {
+        public static List<Order> GetList(bool getLines) {
             string sql = @"SELECT orderId, customerId, first, last, email, phone, adrL1, adrL2, city, state, zip, subtotal, shipping, total, orderDate, transactionId FROM orders";
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             SqlDataReader? reader = null;
@@ -224,7 +224,7 @@ namespace MyApp.App.Biz
                     order.OrderDate = reader.GetDateTime(index++);
                     order.TransactionId = reader.GetString(index++);
                     if (getLines)
-                        order.Lines = OrderLine.GetAllOrderLines(order.OrderId);
+                        order.Lines = OrderLine.GetList(order.OrderId);
                     orders.Add(order);
                 }
                 return orders;
@@ -240,7 +240,7 @@ namespace MyApp.App.Biz
         /// <param name="customerId"></param>
         /// <param name="getLines"></param>
         /// <returns></returns>
-        public static List<Order> GetAllOrders(int customerId, bool getLines) {
+        public static List<Order> GetList(int customerId, bool getLines) {
             string sql = @"SELECT orderId, customerId, first, last, email, phone, adrL1, adrL2, city, state, zip, subtotal, shipping, total, orderDate, transactionId " +
                 "FROM orders WHERE customerId=@customerId";
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
@@ -269,7 +269,7 @@ namespace MyApp.App.Biz
                     order.OrderDate = reader.GetDateTime(index++);
                     order.TransactionId = reader.GetString(index++);
                     if (getLines)
-                        order.Lines = OrderLine.GetAllOrderLines(order.OrderId);
+                        order.Lines = OrderLine.GetList(order.OrderId);
                     orders.Add(order);
                 }
                 return orders;
@@ -278,19 +278,6 @@ namespace MyApp.App.Biz
                 UseSql.Close(conn, sqlCmd);
             }
         }
-
-        //public static List<Order> GetSomeOrders(int amt, int pg) {
-        //    List<Order> list = new List<Order>();
-        //    Order order = new Order();
-        //    int id = 1000; //db starts at 1000
-        //    int offset = (pg - 1) * amt;
-        //    amt += 1000;
-        //    for (id += offset; id < amt; id++) {
-        //        order = order.GetById(id);
-        //        list.Add(order);
-        //    }
-        //    return list;
-        //}
 
         public string AddCustomerInfo(Customer customer) {
             // fill in corresponding fields
@@ -434,6 +421,15 @@ namespace MyApp.App.Biz
         }
 
         /// <summary>
+        /// Set the Transaction property via the TransactionId and the Braintree server SDK
+        /// <br/> - used to set the Transaction property after retrieving a TransactionId from the db
+        /// </summary>
+        public void SetTransaction() {
+            IBraintreeGateway gateway = braintreeConfig.GetGateway();
+            Transaction = gateway.Transaction.Find(TransactionId);
+        }
+
+        /// <summary>
         /// Create a Transaction using the Braintree server SDK 
         /// <br/> - Sets transactionId and Transaction on success 
         /// <br/> - Sets transactionId on !null
@@ -468,39 +464,6 @@ namespace MyApp.App.Biz
                 return false;
             }
         }
-
-        public bool CreditCardVerification() {
-            return true;
-        }
-
-        /// <summary>
-        /// Set the Transaction property via the TransactionId and the Braintree server SDK
-        /// <br/> - used to set the Transaction property after retrieving a TransactionId from the db
-        /// </summary>
-        public void SetTransaction() {
-            IBraintreeGateway gateway = braintreeConfig.GetGateway();
-            Transaction = gateway.Transaction.Find(TransactionId);
-        }
-
-
-        // proabably can delete this as I will not add an unsuccessful transaction into the database
-        /// <summary>
-        /// Determines whether or not a Transaction was successful using transactionSuccessStatuses
-        /// <br/> - handle 
-        /// </summary>
-        private bool TransactionSuccess() {
-            IBraintreeGateway gateway = braintreeConfig.GetGateway();
-
-            Transaction = gateway.Transaction.Find(TransactionId);
-            if (transactionSuccessStatuses.Contains(Transaction.Status)) {
-                return true;
-            } else {
-
-                return false;
-            }
-
-        }
-
 
     }
 }

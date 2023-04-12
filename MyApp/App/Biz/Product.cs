@@ -181,23 +181,53 @@ namespace MyApp.App.Biz
             }
         }
 
-        public static List<Product> GetActiveProducts(int amt, int pg) {
-            List<Product> list = new List<Product>();
-            Product prod = new Product();
-            int id = 1000; //db starts at 1000
-            int offset = (pg - 1) * amt;
-            id += offset;
-            int count = 0;
-            while (count < amt) {
-                prod = prod.GetById(id);
-                if (prod.Status == "active") {
-                    list.Add(prod);
-                    count++;
+        public static List<Product> GetActiveProducts() {
+            string sql = @"SELECT productId, name, imgUrl, cost, price, descr, status, insWhen, updWhen FROM products WHERE status='active'";
+            (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
+            SqlDataReader? reader = null;
+            List<Product> products = new List<Product>();
+            try {
+                reader = sqlCmd.ExecuteReader();
+                while (reader.Read()) {
+                    Product prod = new Product();
+                    int index = 0;
+                    prod.ProductId = reader.GetInt32(index++);
+                    prod.Name = reader.GetString(index++);
+                    prod.ImgUrl = reader.GetString(index++);
+                    prod.Cost = reader.GetDecimal(index++);
+                    prod.Price = reader.GetDecimal(index++);
+                    prod.Descr = reader.GetString(index++);
+                    prod.Status = reader.GetString(index++);
+                    prod.InsWhen = reader.GetDateTime(index++);
+                    object sqlDateTime = reader[index++];
+                    if (sqlDateTime == DBNull.Value) prod.UpdWhen = null;
+                    else prod.UpdWhen = Convert.ToDateTime(sqlDateTime);
+                    products.Add(prod);
                 }
-                id++;
+                return products;
+            } finally {
+                if (reader != null) reader.Close();
+                UseSql.Close(conn, sqlCmd);
             }
-            return list;
         }
+
+        //public static List<Product> GetActiveProducts(int amt, int pg) {
+        //    List<Product> list = new List<Product>();
+        //    Product prod = new Product();
+        //    int id = 1000; //db starts at 1000
+        //    int offset = (pg - 1) * amt;
+        //    id += offset;
+        //    int count = 0;
+        //    while (count < amt) {
+        //        prod = prod.GetById(id);
+        //        if (prod.Status == "active") {
+        //            list.Add(prod);
+        //            count++;
+        //        }
+        //        id++;
+        //    }
+        //    return list;
+        //}
 
         /// <summary>
         /// Excludes product cost value

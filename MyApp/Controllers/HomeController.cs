@@ -34,11 +34,13 @@ namespace MyApp.Controllers
                     // add updated order to session
                     HttpContext.Session.SetString("order", orderJson);
                 }
+                model.ProdList = customer.GetCustomizedProductList();
+            } else {
+                // amt: the number of products per page
+                //int amt = 12; // keep amt a multiple of 12 so that there are an even number of products per row
+                //int pg = 1; // the current page
+                model.ProdList = Product.GetActiveProducts();              
             }
-            // amt: the number of products per page
-            int amt = 12; // keep amt a multiple of 12 so that there are an even number of products per row
-            int pg = 1; // the current page
-            model.ProdList = Product.GetActiveProducts(amt, pg);
             return View("Index", model);
         }
 
@@ -131,7 +133,7 @@ namespace MyApp.Controllers
                 string json = HttpContext.Session.GetString("customer");
                 App.Biz.Customer customer = new();
                 customer = customer.Deserialize(json);
-                customer.Orders = Order.GetAllOrders(customer.CustomerId, true);
+                customer.Orders = Order.GetList(customer.CustomerId, true);
                 model.Json = customer.Serialize(); // add it to the view model
             }
             return View("MyAccount", model);

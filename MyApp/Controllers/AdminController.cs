@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using MyApp.App.Biz;
 using MyApp.Models;
 using System.Text.Json;
@@ -120,18 +121,22 @@ namespace MyApp.Controllers
         }
 
         [HttpGet, Route("/admin/order-report")]
-        public ActionResult OrderReport(int? orderId) {
+        public ActionResult OrderReport() {
             AdminViewModel model = new AdminViewModel();
-            List<Order> orders;
-            if (orderId != null) {
-                bool getLines = true;
-                orders = Order.GetAllOrders((int)orderId, getLines);
-            } else {
-                bool getLines = false;
-                orders = Order.GetAllOrders(getLines);
-            }
+            bool getLines = false;
+            List<Order> orders = Order.GetList(getLines);
             model.Json = JsonSerializer.Serialize(orders);
             return View("OrderReport", model);
+        }
+
+        [HttpGet, Route("/admin/order-report/order-details")]
+        public ActionResult OrderDetails(int orderId) {
+            AdminViewModel model = new AdminViewModel();
+            List<Order> orders = new List<Order>();
+            Order order = Order.GetById(orderId, true);
+            orders.Add(order);
+            model.Json = JsonSerializer.Serialize(orders);
+            return View("OrderDetails", model);
         }
 
         [HttpGet, Route("/admin/product-report")]

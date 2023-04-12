@@ -63,7 +63,7 @@ namespace MyApp.Controllers
             int productId = int.Parse(data["productId"]);
             json = order.RmvLine(productId);
             HttpContext.Session.SetString("order", json);
-            return Json(HttpContext.Session.GetString("order")); // could also simply pass the local json variable
+            return Json(json);
         }
 
         [HttpPost, Route("/cart/ajax-qty-plus")]
@@ -79,7 +79,7 @@ namespace MyApp.Controllers
             int productId = int.Parse(data["productId"]);
             json = order.QtyPlus(productId);
             HttpContext.Session.SetString("order", json);
-            return Json(HttpContext.Session.GetString("order")); // could also simply pass the local json variable
+            return Json(json);
         }
 
         [HttpPost, Route("/cart/ajax-qty-minus")]
@@ -95,7 +95,7 @@ namespace MyApp.Controllers
             int productId = int.Parse(data["productId"]);
             json = order.QtyMinus(productId);
             HttpContext.Session.SetString("order", json);
-            return Json(HttpContext.Session.GetString("order")); // could also simply pass the local json variable
+            return Json(json);
         }
 
         /* Checkout Section */
@@ -171,7 +171,7 @@ namespace MyApp.Controllers
                 int orderId = (int)HttpContext.Session.GetInt32("orderId");
                 // look up the order
                 Order order = new Order();
-                order = order.GetById(orderId, true);
+                order = Order.GetById(orderId, true);
                 order.SetTransaction();
                 // add it to the view model
                 model.JsonOrder = order.Serialize();
