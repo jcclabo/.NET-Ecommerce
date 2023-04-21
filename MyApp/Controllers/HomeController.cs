@@ -25,7 +25,7 @@ namespace MyApp.Controllers
             // if customer is in session associate customer with order
             if (HttpContext.Session.GetString("customer") != null) {
                 string customerJson = HttpContext.Session.GetString("customer");
-                App.Biz.Customer customer = new();
+                Customer customer = new Customer();
                 customer = customer.Deserialize(customerJson);
                 // if customer id is not set to a customer
                 if (order.CustomerId == 0) {
@@ -39,7 +39,7 @@ namespace MyApp.Controllers
                 // amt: the number of products per page
                 //int amt = 12; // keep amt a multiple of 12 so that there are an even number of products per row
                 //int pg = 1; // the current page
-                model.ProdList = Product.GetActiveProducts();              
+                model.ProdList = Product.GetActiveList();              
             }
             return View("Index", model);
         }
@@ -64,8 +64,7 @@ namespace MyApp.Controllers
                 Order order;
                 string orderJson;
                 // Add customer to Session
-                App.Biz.Customer customer = new();
-                customer = customer.GetByEmail(email);
+                Customer customer = Customer.GetByEmail(email);
                 // if order is in session associate customer with order
                 if (HttpContext.Session.GetString("order") != null) {
                     orderJson = HttpContext.Session.GetString("order");
@@ -88,7 +87,7 @@ namespace MyApp.Controllers
 
         [HttpPost, Route("/login/ajax-create-account")]
         public ActionResult CreateAccount(Dictionary<string, string> data) {
-            App.Biz.Customer customer = new();
+            Customer customer = new Customer();
             Order order;
             string orderJson;
             string plainTextPswd = "";
@@ -103,7 +102,7 @@ namespace MyApp.Controllers
             // attempt to insert customer
             bool success = customer.Insert(plainTextPswd, repeatPlainPswd);
             if (success) {
-                customer = customer.GetByEmail(customer.Email);
+                customer = Customer.GetByEmail(customer.Email);
                 // if order is in session associate customer with order
                 if (HttpContext.Session.GetString("order") != null) {
                     orderJson = HttpContext.Session.GetString("order");
@@ -131,7 +130,7 @@ namespace MyApp.Controllers
             // if there is a customer in session 
             if (HttpContext.Session.GetString("customer") != null) {
                 string json = HttpContext.Session.GetString("customer");
-                App.Biz.Customer customer = new();
+                Customer customer = new Customer();
                 customer = customer.Deserialize(json);
                 customer.Orders = Order.GetList(customer.CustomerId, true);
                 model.Json = customer.Serialize(); // add it to the view model
@@ -141,7 +140,7 @@ namespace MyApp.Controllers
 
         [HttpPost, Route("/myaccount/ajax-save")]
         public ActionResult UpdateCustomer(Dictionary<string, string> data) {
-            App.Biz.Customer customer = new();
+            Customer customer = new Customer();
             customer.CustomerId = int.Parse(data["CustomerId"]);
 
             if (data["First"] != null)
@@ -204,7 +203,9 @@ namespace MyApp.Controllers
         }
         [HttpPost, Route("/myaccount/ajax-customer")]
         public ActionResult GetCustomerInfo() {
-            return Json(HttpContext.Session.GetString("customer"));
+            string json = HttpContext.Session.GetString("customer");
+            Customer customer = JsonSerializer.Deserialize<Customer>(json);
+            return Json(new { customer });
         }
 
         [HttpPost, Route("/myaccount/ajax-sign-out")]

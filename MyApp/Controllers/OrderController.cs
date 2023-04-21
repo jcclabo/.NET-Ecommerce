@@ -40,7 +40,7 @@ namespace MyApp.Controllers
             int customerId = 0;
             if (HttpContext.Session.GetString("customer") != null) {
                 string custJson = HttpContext.Session.GetString("customer");
-                App.Biz.Customer customer = new();
+                Customer customer = new Customer();
                 customer = customer.Deserialize(custJson);
                 customerId = customer.CustomerId;
             }
@@ -146,6 +146,11 @@ namespace MyApp.Controllers
                 order.Zip = data["Zip"];
             if (data["paymentMethodNonce"] != null)
                 order.SetPaymentMethodNonce(data["paymentMethodNonce"]);
+            if (data["expressShip"] != null) {
+                bool express = bool.Parse(data["expressShip"]);
+                if(express) order.Shipping = 10;
+            }
+                
 
             bool success = order.Insert();
             if (success) {

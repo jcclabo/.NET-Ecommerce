@@ -12,6 +12,11 @@
             </div>
         </a>*@
     </div>
+    @if (Model.customerId != "") {
+        <p class="my-auto mb-4">
+            Customer ID: @Model.customerId
+        </p>
+    }
     <div id="table" data-mdb-striped="true" data-mdb-fixed-header="false" data-mdb-loader-class="bg-secondary" data-mdb-border-color="secondary"
          data-mdb-full-pagination="true"
          entriesOptions=[10, 25, 50, 200]> <!-- temporay hack for entriesOptions, which was necessary for pagination. Tired many other ways to get this to work but documentation is limited and it would not cooperate -->
@@ -27,7 +32,7 @@
             data: function () {
                 return {
                     orders: null,
-                    content: null,
+                    content: null
                 }
             },
             methods: { 
@@ -38,10 +43,12 @@
                     // format dates
                     for(var i = 0; i < this.orders.length; i++) {
                         this.orders[i].OrderDate = this.formatDate(this.orders[i].OrderDate);
+                        this.orders[i].Total = this.toCurrency(this.orders[i].Total);
                     }
                     this.content = {
                         columns: [
-                            { label: 'ID', field: 'OrderId', sort: true },
+                            { label: 'Order ID', field: 'OrderId', sort: true },
+                            //{ label: 'Customer ID', field: 'CustomerId', sort: true },
                             { label: 'First', field: 'First', sort: true },
                             { label: 'Last', field: 'Last', sort: true },
                             { label: 'Address Line 1', field: 'AdrL1', sort: true },
@@ -60,7 +67,7 @@
                         rows: this.orders.map((row) => {
                             return {
                                 ...row,
-                                view: `<a href="/admin/order-report/order-details?orderId=${row.OrderId}">View</a>`
+                                view: `<a href="/admin/order/details?orderId=${row.OrderId}">View</a>`
                             };
                         }),
                     };

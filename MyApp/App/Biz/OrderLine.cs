@@ -50,7 +50,6 @@ namespace MyApp.App.Biz
                 line.Qty = reader.GetInt32(index++);
                 line.UnitPrice = reader.GetDecimal(index++);
                 line.OrderDate = reader.GetDateTime(index++);
-                reader.Close();
                 return line;
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
@@ -109,8 +108,7 @@ namespace MyApp.App.Biz
                 }
                 return orderLines;
             } finally {
-                if (reader != null) reader.Close();
-                UseSql.Close(conn, sqlCmd);
+                UseSql.Close(conn, sqlCmd, reader);
             }
         }
 
@@ -140,8 +138,7 @@ namespace MyApp.App.Biz
                 }
                 return orderLines;
             } finally {
-                if (reader != null) reader.Close();
-                UseSql.Close(conn, sqlCmd);
+                UseSql.Close(conn, sqlCmd, reader);
             }
         }
 

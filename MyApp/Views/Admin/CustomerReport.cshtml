@@ -1,0 +1,82 @@
+﻿@model AdminViewModel
+@{
+    ViewData["Title"] = "Order Report";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between mb-4 border-bottom">
+        <h5 class="my-auto text-dark">Customer Report</h5>
+        @*<a href="/admin">
+        <div class="btn btn-outline-primary btn-rounded fw-bold w-20 my-3 mx-1">
+        Dashboard
+        </div>
+        </a>*@
+    </div>
+    <div class="mb-4">
+        <label class="me-2">Search:</label>
+        <input id="table-search-input" class="w-25" type="text" />
+    </div>
+    <div id="table" data-mdb-striped="true" data-mdb-fixed-header="false" data-mdb-loader-class="bg-secondary" data-mdb-border-color="secondary"
+         data-mdb-full-pagination="true"
+         entriesOptions=[10, 25, 50, 200]>
+        <!-- temporay hack for entriesOptions, which was necessary for pagination. Tired many other ways to get this to work but documentation is limited and it would not cooperate -->
+    </div>
+
+    <span id="json" class="d-none" data-json='@Model.Json'></span>
+</div>
+
+@section Scripts {
+    <script>
+
+        var pageMixin = {
+            data: function () {
+                return {
+                    customers: null,
+                    content: null,
+                }
+            },
+            methods: {
+            },
+            created() {
+                if ($('#json').attr('data-json') != "") {
+                    this.customers = JSON.parse($('#json').attr('data-json'));
+                    // format dates
+                    for (var i = 0; i < this.customers.length; i++) {
+                        this.customers[i].InsWhen = this.formatDate(this.customers[i].InsWhen);
+                        this.customers[i].UpdWhen = this.formatDate(this.customers[i].UpdWhen);
+                    }
+                    this.content = {
+                        columns: [
+                            { label: 'Cust. ID', field: 'CustomerId', sort: true },
+                            { label: 'First', field: 'First', sort: true },
+                            { label: 'Last', field: 'Last', sort: true },
+                            { label: 'Email', field: 'Email', sort: true },
+                            //{ label: 'Phone', field: 'Phone', sort: true },
+                            { label: 'Address Line 1', field: 'AdrL1', sort: true },
+                            { label: 'Line 2', field: 'AdrL2', sort: false },
+                            { label: 'City', field: 'City', sort: true },
+                            { label: 'State', field: 'State', sort: true },
+                            { label: 'Zip', field: 'Zip', sort: true },
+                            //{ label: 'Created', field: 'InsWhen', sort: true },
+                            //{ label: 'Updated', field: 'UpdWhen', sort: true },
+                            { label: '', field: 'view', sort: true },
+                        ],
+                        rows: this.customers.map((row) => {
+                            return {
+                                ...row,
+                                view: `<a href="/admin/order/report?customerId=${row.CustomerId}">View</a>`
+                            };
+                        }),
+                    };
+                    const instance = new mdb.Datatable(document.getElementById('table'), this.content);
+
+                    document.getElementById('table-search-input').addEventListener('input', (e) => {
+                        instance.search(e.target.value);
+                    });
+                }
+            }
+        };
+
+        mixinArray.push(pageMixin);
+    </script>
+}

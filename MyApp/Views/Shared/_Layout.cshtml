@@ -29,10 +29,13 @@
                         @if (ViewBag.Admin)
                         {
                             <div>
-                                <a href="/admin/order-report" class="nav-link text-white d-inline-block">
+                                <a href="/admin/customer/report" class="nav-link text-white d-inline-block">
+                                    Customers
+                                </a>
+                                <a href="/admin/order/report" class="nav-link text-white d-inline-block">
                                     Orders
                                 </a>
-                                <a href="/admin/product-report" class="nav-link text-white d-inline-block">
+                                <a href="/admin/product/report" class="nav-link text-white d-inline-block">
                                     Products
                                 </a>
                                 <a href="/admin/product" class="nav-link text-white d-inline-block">
@@ -127,21 +130,23 @@
                 <div class="py-2 px-3">
                     <div class="m-0 p-2 text-start text-dark"> Admin </div>
                     <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
-                        <a href="/admin/order-report" class="nav-link text-dark">
-                            <i class="fas fa-chart-line text-dark me-1"></i>
-                            Order Report
+                        <a href="/admin/customer/report" class="nav-link text-dark">
+                            - Customer Report
                         </a>
                     </div>
                     <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
-                        <a href="/admin/product-report" class="nav-link text-dark">
-                            <i class="fas fa-th-large text-dark me-1"></i>
-                            Product Report
+                        <a href="/admin/order/report" class="nav-link text-dark">
+                            - Order Report
+                        </a>
+                    </div>
+                    <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
+                        <a href="/admin/product/report" class="nav-link text-dark">
+                            - Product Report
                         </a>
                     </div>
                     <div class="btn btn-link btn-block m-0 p-2 text-start text-dark">
                         <a href="/admin/product" class="nav-link text-dark">
-                            <i class="fas fa-user-tie text-dark me-1"></i>
-                            Product Editor
+                            - Product Editor
                         </a>
                     </div>
                 </div>
@@ -220,7 +225,6 @@
             el: '#app',
             mixins: mixinArray,
             data: {
-                isAdmin: false
             },
             methods: {
                 toCurrency: function (value) {
@@ -239,6 +243,13 @@
                     day = date.getDate();
                     month = date.getMonth() + 1;
                     year = date.getFullYear();
+
+                    // add 0s so that sorting date works properly
+                    if (day < 10)
+                        day = '0' + day;
+                    if (month < 10)
+                        month = '0' + month;
+
                     // make sure DateTime.MinValue is not shown in updated columns
                     if (month == 12 && day == 31 && year == 1969) 
                         return '-';

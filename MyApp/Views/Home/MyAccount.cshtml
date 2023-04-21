@@ -247,7 +247,8 @@
                         </div>
                         <div class="d-flex justify-content-between border-bottom pb-2 mb-4">
                             <p>Shipping</p>
-                            <p>Free</p>
+                            <p v-if="order.Shipping != 0" v-text="toCurrency(order.Shipping)"></p>
+                            <p v-else>Free</p>
                         </div>
                         <div class="d-flex justify-content-between fw-bold">
                             <h5>Order Total</h5>
@@ -328,7 +329,8 @@
                         </div>
                         <div class="d-flex justify-content-between border-bottom pb-2 mb-4">
                             <p>Shipping</p>
-                            <p>Free</p>
+                            <p v-if="order.Shipping != 0" v-text="toCurrency(order.Shipping)"></p>
+                            <p v-else>Free</p>
                         </div>
                         <div class="d-flex justify-content-between fw-bold">
                             <h5>Order Total</h5>
@@ -409,10 +411,14 @@
                         url: "/myaccount/ajax-customer",
                         dataType: "json",
                         success: function (result) {
+                            //app.customer = null;
+                            //app.customer = result;
                             app.editInfo = false;
                             app.editPass = false;
                             app.clearPswdVars();
                             app.resetMsgs();
+                            // scroll to the top of the page
+                            //$('html, body').animate({ scrollTop: 0 }, 'fast');
                         },
                         error: function (req, status, error) {
                         }

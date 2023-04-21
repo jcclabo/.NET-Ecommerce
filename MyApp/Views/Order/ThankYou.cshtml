@@ -28,7 +28,8 @@
                 </div>
                 <div class="d-flex justify-content-between border-bottom pb-2 mb-4">
                     <p>Shipping</p>
-                    <p>Free</p>
+                    <p v-if="order.Shipping != 0" v-text="toCurrency(order.Shipping)"></p>
+                    <p v-else>Free</p>
                 </div>
                 <div class="d-flex justify-content-between fw-bold">
                     <h5>Order Total</h5>

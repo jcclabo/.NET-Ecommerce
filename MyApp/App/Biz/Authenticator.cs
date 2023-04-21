@@ -17,7 +17,7 @@ namespace MyApp.App.Biz
 
         public static bool AdminAuth(string email, string password) {
             email = email.ToLower(new CultureInfo("en-US", false));
-            App.Biz.Customer customer = new();
+            Customer customer = new Customer();
             string adminEmail = AppSettings.GetString("AdminEmail");
             bool correctEmail = VerifyHash(customer, adminEmail, email);
             if (correctEmail) {
@@ -29,8 +29,7 @@ namespace MyApp.App.Biz
 
         public static bool CustomerAuth(string email, string password) {
             email = email.ToLower(new CultureInfo("en-US", false));
-            App.Biz.Customer customer = new();
-            customer = customer.GetByEmail(email);
+            Customer customer = Customer.GetByEmail(email);
             if (customer.Error == "")
                 return VerifyHash(customer, customer.HashedPswd, password);
             else

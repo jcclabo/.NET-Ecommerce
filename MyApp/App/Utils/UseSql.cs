@@ -34,7 +34,7 @@ namespace MyApp.App.Utils
         }
 
         public static void Close(SqlConnection conn, SqlCommand cmd, SqlDataReader reader) {
-            reader.Close();
+            if (reader != null) reader.Close();
             cmd.Dispose();
             conn.Close();
             conn.Dispose();

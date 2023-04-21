@@ -92,7 +92,6 @@ namespace MyApp.App.Biz
                 order.OrderDate = reader.GetDateTime(index++);
                 order.TransactionId = reader.GetString(index++);
                 order.paymentMethodNonce = reader.GetString(index++);
-                reader.Close();
                 if (getLines)
                     order.Lines = OrderLine.GetList(order.OrderId);
                 return order;
@@ -134,10 +133,10 @@ namespace MyApp.App.Biz
         }
 
         public bool Insert() {
-            // validate the order total off of database product prices
-            ValidateTotal(); // throws if the total is invalid
+            // ensure order total is correct by using database product prices 
+            CalcTotalsDb();
 
-            // validate order info
+            // validate form input
             if (!ValidFormEntries())
                 return false;
 
@@ -197,7 +196,7 @@ namespace MyApp.App.Biz
         /// <summary>
         /// Does not get paymentMethodNonce
         /// </summary>
-        public static List<Order> GetList(bool getLines) {
+        public static List<Order> GetList() {
             string sql = @"SELECT orderId, customerId, first, last, email, phone, adrL1, adrL2, city, state, zip, subtotal, shipping, total, orderDate, transactionId FROM orders";
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             SqlDataReader? reader = null;
@@ -223,14 +222,11 @@ namespace MyApp.App.Biz
                     order.Total = reader.GetDecimal(index++);
                     order.OrderDate = reader.GetDateTime(index++);
                     order.TransactionId = reader.GetString(index++);
-                    if (getLines)
-                        order.Lines = OrderLine.GetList(order.OrderId);
                     orders.Add(order);
                 }
                 return orders;
             } finally {
-                if (reader != null) reader.Close();
-                UseSql.Close(conn, sqlCmd);
+                UseSql.Close(conn, sqlCmd, reader);
             }
         }
 
@@ -269,13 +265,12 @@ namespace MyApp.App.Biz
                     order.OrderDate = reader.GetDateTime(index++);
                     order.TransactionId = reader.GetString(index++);
                     if (getLines)
-                        order.Lines = OrderLine.GetList(order.OrderId);
+                        order.Lines = OrderLine.GetList(order.OrderId); // probably slower than one call to orderlines with a where clause and sorting/pairing orderlines to each order
                     orders.Add(order);
                 }
                 return orders;
             } finally {
-                if (reader != null) reader.Close();
-                UseSql.Close(conn, sqlCmd);
+                UseSql.Close(conn, sqlCmd, reader);
             }
         }
 
@@ -346,18 +341,18 @@ namespace MyApp.App.Biz
             return Serialize();
         }
 
-        private void ValidateTotal() {
-            decimal subtotal = 0;
+        private void CalcTotalsDb() {
+            decimal initTotal = Total;
+            Subtotal = 0;
             if (Lines.Count != 0) {
                 foreach (OrderLine line in Lines) {
                     Product prod = new Product();
                     prod = prod.GetById(line.ProductId);
-                    subtotal += (prod.Price * line.Qty);
+                    Subtotal += (prod.Price * line.Qty);
                 }
             }
-            decimal total = subtotal + Shipping;
-            if (Total != total)
-                throw new AppException("Order Total did not pass validation");
+            Total = Subtotal + Shipping;
+            if (initTotal != Total) throw new AppException("invalid initial order total");
         }
 
         private void CalcTotals() {

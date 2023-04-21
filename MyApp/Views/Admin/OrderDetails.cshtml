@@ -64,6 +64,13 @@
                     // format dates
                     for (var i = 0; i < this.orders.length; i++) {
                         this.orders[i].OrderDate = this.formatDate(this.orders[i].OrderDate);
+                        if (this.orders[i].Shipping == 0) {
+                            this.orders[i].Shipping = "Free";
+                        } else {
+                            this.orders[i].Shipping = this.toCurrency(this.orders[i].Shipping);
+                        }
+                        //this.orders[i].Subtotal = this.toCurrency(this.orders[i].Subtotal);
+                        this.orders[i].Total = this.toCurrency(this.orders[i].Total);
                     }
                     var orderContent = {
                         columns: [
@@ -75,8 +82,8 @@
                             { label: 'City', field: 'City', sort: false },
                             { label: 'State', field: 'State', sort: false },
                             { label: 'Zip', field: 'Zip', sort: false },
-                            //{ label: 'Subtotal', field: 'Subtotal', sort: 'false' },
-                            //{ label: 'Shipping', field: 'Shipping', sort: 'false' },
+                            //{ label: 'Subtotal', field: 'Subtotal', sort: false },
+                            { label: 'Shipping', field: 'Shipping', sort: false },
                             { label: 'Total', field: 'Total', sort: false },
                             { label: 'Order Date', field: 'OrderDate', sort: false },
                         ],

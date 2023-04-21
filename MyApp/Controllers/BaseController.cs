@@ -18,7 +18,6 @@ namespace MyApp.Controllers
                 ViewBag.SignedIn = false;
             }
             if (HttpContext.Session.GetString("order") != null) {
-                
                 Order order = new Order();
                 string orderJson = HttpContext.Session.GetString("order");
                 order = order.Deserialize(orderJson);

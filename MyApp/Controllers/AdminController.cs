@@ -120,16 +120,38 @@ namespace MyApp.Controllers
             else return StatusCode(StatusCodes.Status422UnprocessableEntity, new { inputErrors = prod.InputErrors, errMsg = prod.Error });
         }
 
-        [HttpGet, Route("/admin/order-report")]
-        public ActionResult OrderReport() {
+        [HttpGet, Route("/admin/customer/report")]
+        public ActionResult CustomerReport() {
             AdminViewModel model = new AdminViewModel();
-            bool getLines = false;
-            List<Order> orders = Order.GetList(getLines);
+            List<Customer> customers = Customer.GetList();
+            model.Json = JsonSerializer.Serialize(customers);
+            return View("CustomerReport", model);
+        }
+
+        [HttpGet, Route("/admin/customer/details")]
+        public ActionResult CustomerReport(string email) {
+            AdminViewModel model = new AdminViewModel();
+            Customer customer = Customer.GetByEmail(email);
+            customer.Orders = Order.GetList(customer.CustomerId, false);
+            model.Json = customer.Serialize();
+            return View("CustomerDetails", model);
+        }
+
+        [HttpGet, Route("/admin/order/report")]
+        public ActionResult OrderReport(int? customerId) {
+            AdminViewModel model = new AdminViewModel();
+            List<Order> orders;
+            if (customerId != null) {
+                orders = Order.GetList((int)customerId, false);
+                model.customerId = customerId.ToString();
+            } else {
+                orders = Order.GetList();
+            }
             model.Json = JsonSerializer.Serialize(orders);
             return View("OrderReport", model);
         }
 
-        [HttpGet, Route("/admin/order-report/order-details")]
+        [HttpGet, Route("/admin/order/details")]
         public ActionResult OrderDetails(int orderId) {
             AdminViewModel model = new AdminViewModel();
             List<Order> orders = new List<Order>();
@@ -139,10 +161,10 @@ namespace MyApp.Controllers
             return View("OrderDetails", model);
         }
 
-        [HttpGet, Route("/admin/product-report")]
+        [HttpGet, Route("/admin/product/report")]
         public ActionResult ProductReport() {
             AdminViewModel model = new AdminViewModel();
-            List<Product> products = Product.GetAllProducts();
+            List<Product> products = Product.GetList();
             model.Json = JsonSerializer.Serialize(products);
             return View("ProductReport", model);
         }

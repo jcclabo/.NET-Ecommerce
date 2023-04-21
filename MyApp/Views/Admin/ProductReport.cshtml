@@ -11,7 +11,7 @@
             </div>
         </a>*@
     </div>
-    <div id="table" style="font-family:'Times New Roman'" data-mdb-striped="true" data-mdb-fixed-header="false" data-mdb-loader-class="bg-secondary" data-mdb-border-color="secondary"
+    <div id="table" data-mdb-striped="true" data-mdb-fixed-header="false" data-mdb-loader-class="bg-secondary" data-mdb-border-color="secondary"
          data-mdb-full-pagination="true" 
          entriesOptions=[10, 25, 50, 200]> <!-- temporay hack for entriesOptions, which was necessary for pagination. Tired many other ways to get this to work but documentation is limited and it would not cooperate -->
     </div>
@@ -40,7 +40,7 @@
                     }
                     this.content = {
                         columns: [
-                            { label: 'ID', field: 'ProductId', sort: true },
+                            { label: 'Prod. ID', field: 'ProductId', sort: true },
                             { label: 'Name', field: 'Name', sort: true },
                             { label: 'Cost', field: 'Cost', sort: true },
                             { label: 'Price', field: 'Price', sort: true },

@@ -22,7 +22,7 @@ namespace MyApp.App.Biz
 
         public string Error { get; private set; }
         public string[] InputErrors { get; private set; }
-        private const int requiredPlusHeader = 5 + 1; // defines InputErrors size
+        // private const int requiredPlusHeader = 5 + 1; // defines InputErrors size
 
         public Product() {
             ProductId = 0;
@@ -34,7 +34,7 @@ namespace MyApp.App.Biz
             Status = "";
             InsWhen = DateTime.MinValue;
             Error = "";
-            InputErrors = new string[requiredPlusHeader];
+            InputErrors = new string[0];
         }
 
         public Product GetById(int id) {
@@ -151,7 +151,7 @@ namespace MyApp.App.Biz
             }
         }
 
-        public static List<Product> GetAllProducts() {
+        public static List<Product> GetList() {
             string sql = @"SELECT productId, name, imgUrl, cost, price, descr, status, insWhen, updWhen FROM products";
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             SqlDataReader? reader = null;
@@ -176,12 +176,11 @@ namespace MyApp.App.Biz
                 }
                 return products;
             } finally {
-                if (reader != null) reader.Close();
-                UseSql.Close(conn, sqlCmd);
+                UseSql.Close(conn, sqlCmd, reader);
             }
         }
 
-        public static List<Product> GetActiveProducts() {
+        public static List<Product> GetActiveList() {
             string sql = @"SELECT productId, name, imgUrl, cost, price, descr, status, insWhen, updWhen FROM products WHERE status='active'";
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             SqlDataReader? reader = null;
@@ -206,8 +205,7 @@ namespace MyApp.App.Biz
                 }
                 return products;
             } finally {
-                if (reader != null) reader.Close();
-                UseSql.Close(conn, sqlCmd);
+                UseSql.Close(conn, sqlCmd, reader);
             }
         }
 

@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Braintree;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using MyApp.App.ErrorHandling;
 using MyApp.App.Utils;
 using System.Data;
+using System.Data.SqlTypes;
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace MyApp.App.Biz
 {
@@ -56,7 +59,7 @@ namespace MyApp.App.Biz
             sqlCmd.Parameters.Add("@customerId", SqlDbType.Int).Value = id;
 
             var reader = sqlCmd.ExecuteReader();
-            App.Biz.Customer customer = new();
+            Customer customer = new Customer();
             customer.CustomerId = id;
             int index = 0;
             try {
@@ -75,7 +78,6 @@ namespace MyApp.App.Biz
                 object sqlDateTime = reader[index++];
                 if (sqlDateTime == DBNull.Value) customer.UpdWhen = null;
                 else customer.UpdWhen = Convert.ToDateTime(sqlDateTime);
-                reader.Close();
                 return customer;
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
@@ -85,7 +87,7 @@ namespace MyApp.App.Biz
             }
         }
 
-        public Customer GetByEmail(string email) {
+        public static Customer GetByEmail(string email) {
             string sql = @"SELECT customerId, first, last, phone, adrL1, adrL2, city, state, zip, hashedPswd, insWhen, updWhen " +
                 "FROM customers WHERE email = @email";
 
@@ -93,7 +95,7 @@ namespace MyApp.App.Biz
             sqlCmd.Parameters.Add("@email", SqlDbType.VarChar).Value = email;
 
             var reader = sqlCmd.ExecuteReader();
-            App.Biz.Customer customer = new();
+            Customer customer = new Customer();
             customer.Email = email.ToLower(new CultureInfo("en-US", false));
             int index = 0;
             try {
@@ -112,7 +114,6 @@ namespace MyApp.App.Biz
                 object sqlDateTime = reader[index++];
                 if (sqlDateTime == DBNull.Value) customer.UpdWhen = null;
                 else customer.UpdWhen = Convert.ToDateTime(sqlDateTime);
-                reader.Close();
                 return customer;
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
@@ -356,9 +357,9 @@ namespace MyApp.App.Biz
             // iterate through all logged in purchases 
             List<OrderLine> allLines = OrderLine.GetList();
             List<OrderLine> myLines = allLines.FindAll(l => l.CustomerId == CustomerId);
-            List<Product> products = Product.GetActiveProducts();
+            List<Product> products = Product.GetActiveList();
 
-            if(myLines.Count > 0) {
+            if (myLines.Count > 0) {
                 allLines = allLines.OrderByDescending(l => l.CustomerId).ToList();
 
                 OrderLine[] lines = allLines.ToArray();
@@ -376,8 +377,8 @@ namespace MyApp.App.Biz
                     while (currCustomerId == lines[i].CustomerId) {
                         // do not compare against this customer
                         if (currCustomerId != this.CustomerId) {
-                            if (myLines.Exists(l => l.ProductId == lines[i].ProductId)) {
-                                count++;
+                            if (myLines.Exists(l => l.ProductId == lines[i].ProductId)) { 
+                                count++; // problem: if a customer purchased the same product as the signed in customer on multiple different orders it will double count the product...
                             }
                         }
                         i++;
@@ -405,27 +406,55 @@ namespace MyApp.App.Biz
                 // and purchased prods in the middle with less relevant prods at the bottom
 
                 List<int> orderByTop = new List<int>();
-                List<int> orderByBottom = new List<int>();
 
                 foreach (OrderLine other in activeSimilarList) {
                     if (!myLines.Any(l => l.ProductId == other.ProductId)) {
                         orderByTop.Add(other.ProductId);
-                    } else {
-                        orderByBottom.Add(other.ProductId);
                     }
                 }
-                int[] orderByArray = orderByTop.Concat(orderByBottom).ToArray();
+                int[] orderByTopArray = orderByTop.ToArray();
 
-                for (int b = 0; b < orderByArray.Length; b++) {
-                    var e = products.Single(x => x.ProductId == orderByArray[b]);
+                for (int t = 0; t < orderByTopArray.Length; t++) {
+                    var e = products.Single(x => x.ProductId == orderByTopArray[t]);
                     products.Remove(e);
-                    products.Insert(b, e);
+                    products.Insert(0, e);
                 }
-            }
 
+            }
             return products;
         }
 
+        // does not get hashedPswd
+        public static List<Customer> GetList() {
+            string sql = @"SELECT customerId, first, last, email, phone, adrL1, adrL2, city, state, zip, insWhen, updWhen FROM customers";
+            (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
+            SqlDataReader? reader = null;
+            List<Customer> customers = new List<Customer>();
+            try {
+                reader = sqlCmd.ExecuteReader();
+                while (reader.Read()) {
+                    Customer customer = new Customer();
+                    int index = 0;
+                    customer.CustomerId = reader.GetInt32(index++);
+                    customer.First = reader.GetString(index++);
+                    customer.Last = reader.GetString(index++);
+                    customer.Email = reader.GetString(index++);
+                    customer.Phone = reader.GetString(index++);
+                    customer.AdrL1 = reader.GetString(index++);
+                    customer.AdrL2 = reader.GetString(index++);
+                    customer.City = reader.GetString(index++);
+                    customer.State = reader.GetString(index++);
+                    customer.Zip = reader.GetString(index++);
+                    object sqlDateTime = reader[index++];
+                    if (sqlDateTime == DBNull.Value) customer.UpdWhen = null;
+                    else customer.UpdWhen = Convert.ToDateTime(sqlDateTime);
+                    customers.Add(customer);
+                }
+                return customers;
+            } finally {
+                UseSql.Close(conn, sqlCmd, reader);
+            }
+        }
 
 
     }
