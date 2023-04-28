@@ -30,7 +30,6 @@ namespace MyApp.App.Biz
         public List<Order> Orders { get; set; }
         public string Error { get; private set; }
         public string[] InputErrors { get; private set; }
-        private const int requiredPlusHeader = 7 + 1; // defines InputErrors size
 
         public Customer() {
             CustomerId = 0;
@@ -48,7 +47,7 @@ namespace MyApp.App.Biz
             UpdWhen = DateTime.MinValue;
             Orders = new List<Order>();
             Error = "";
-            InputErrors = new string[requiredPlusHeader];
+            InputErrors = new string[0];
         }
 
         public static Customer GetById(int id) {
