@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="wwwroot\js\vue-2.7.14.min.js" />
+    <None Include="wwwroot\lib\vue-2.7.14.min.js" />
   </ItemGroup>
 
   <ItemGroup>
