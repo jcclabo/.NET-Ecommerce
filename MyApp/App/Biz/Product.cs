@@ -22,7 +22,6 @@ namespace MyApp.App.Biz
 
         public string Error { get; private set; }
         public string[] InputErrors { get; private set; }
-        // private const int requiredPlusHeader = 5 + 1; // defines InputErrors size
 
         public Product() {
             ProductId = 0;

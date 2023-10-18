@@ -6,7 +6,7 @@
     @*  Heading  *@
     <div class="text-center mb-5">
         <h3 class="fw-bold mb-3">
-            <span v-if="customer.addedAccountInfo">
+            <span v-if="addedAccountInfo">
                 Welcome, <span v-text="customer.First"></span>!
             </span>
             <span v-else>
@@ -19,7 +19,7 @@
     <div class="row border rounded-2 mb-4 py-4 px-xs-5 px-2 mx-0">
         @*  Display account info  *@
         <div class="col-lg-6 col-12 p-4">
-            <div v-if="customer.addedAccountInfo">
+            <div v-if="addedAccountInfo">
                 <div class="d-flex justify-content-between">
                     <h5 class="mb-4 my-auto">Account Info</h5>
                     <button class="btn btn-outline-primary btn-rounded fw-bold px-3 mb-3 mx-1 d-block d-lg-none" type="button"
@@ -105,13 +105,13 @@
                                 <div class="col-sm-6 col-12">
                                     <div class="mb-4">
                                         <label class="form-label">First name <r>*</r></label>
-                                        <input id="first" type="text" class="form-control" maxlength="15" v-model="customer.First" />
+                                        <input id="first" type="text" class="form-control" maxlength="15" v-model="tempCustomer.First" />
                                     </div>
                                 </div>
                                 <div class="col-sm-6 col-12">
                                     <div class="mb-4">
                                         <label class="form-label">Last name <r>*</r></label>
-                                        <input id="last" type="text" class="form-control" maxlength="20" v-model="customer.Last" />
+                                        <input id="last" type="text" class="form-control" maxlength="20" v-model="tempCustomer.Last" />
                                     </div>
                                 </div>
                             </div>
@@ -123,13 +123,13 @@
                                 <div class="col-sm-6 col-12">
                                     <div class="mb-4">
                                         <label class="form-label">Email <r>*</r></label>
-                                        <input id="email" type="text" class="form-control" maxlength="45" v-model="customer.Email" />
+                                        <input id="email" type="text" class="form-control" maxlength="45" v-model="tempCustomer.Email" />
                                     </div>
                                 </div>
                                 <div class="col-sm-6 col-12">
                                     <div class="mb-4">
                                         <label class="form-label">Phone</label>
-                                        <input id="phone" type="tel" class="form-control" maxlength="20" v-model="customer.Phone" />
+                                        <input id="phone" type="tel" class="form-control" maxlength="20" v-model="tempCustomer.Phone" />
                                     </div>
                                 </div>
                             </div>
@@ -141,13 +141,13 @@
                                 <div class="col-sm-8 col-12">
                                     <div class="mb-4">
                                         <label class="form-label">Street Address <r>*</r></label>
-                                        <input id="adrL1" type="text" class="form-control" maxlength="35" v-model="customer.AdrL1" />
+                                        <input id="adrL1" type="text" class="form-control" maxlength="35" v-model="tempCustomer.AdrL1" />
                                     </div>
                                 </div>
                                 <div class="col-sm-4 col-12">
                                     <div class="mb-4">
                                         <label class="form-label">Apt, suite, etc.</label>
-                                        <input id="adrL2" type="text" class="form-control" maxlength="35" v-model="customer.AdrL2" />
+                                        <input id="adrL2" type="text" class="form-control" maxlength="35" v-model="tempCustomer.AdrL2" />
                                     </div>
                                 </div>
                             </div>
@@ -156,19 +156,19 @@
                                 <div class="col-sm-5 col-12">
                                     <div class="mb-4">
                                         <label class="form-label">City <r>*</r></label>
-                                        <input id="city" type="text" class="form-control" maxlength="25" v-model="customer.City" />
+                                        <input id="city" type="text" class="form-control" maxlength="25" v-model="tempCustomer.City" />
                                     </div>
                                 </div>
                                 <div class="col-sm-3 col-6">
                                     <div class="mb-4">
                                         <label class="form-label">State <r>*</r></label>
-                                        <input id="state" type="text" class="form-control" maxlength="2" v-model="customer.State" />
+                                        <input id="state" type="text" class="form-control" maxlength="2" v-model="tempCustomer.State" />
                                     </div>
                                 </div>
                                 <div class="col-sm-4 col-6">
                                     <div class="mb-4">
                                         <label class="form-label">Zip <r>*</r></label>
-                                        <input id="zip" type="text" class="form-control" maxlength="5" v-model="customer.Zip" />
+                                        <input id="zip" type="text" class="form-control" maxlength="5" v-model="tempCustomer.Zip" />
                                     </div>
                                 </div>
                             </div>
@@ -182,17 +182,17 @@
                         @*  Current Password  *@
                         <div class="mb-4">
                             <label class="form-label">Current Password</label>
-                            <input type="password" class="form-control" v-model="customer.oldPswd" />
+                            <input type="password" class="form-control" v-model="oldPswd" />
                         </div>
                         @*  New Password  *@
                         <div class="mb-4">
                             <label class="form-label">New Password</label>
-                            <input type="password" class="form-control" v-model="customer.newPswd" />
+                            <input type="password" class="form-control" v-model="newPswd" />
                         </div>
                         @*  Repeat New Password  *@
                         <div class="mb-4">
                             <label class="form-label">Repeat New Password</label>
-                            <input type="password" class="form-control" v-model="customer.repeatNewPswd" />
+                            <input type="password" class="form-control" v-model="repeatNewPswd" />
                         </div>
                     </div>
                 </div>
@@ -208,13 +208,7 @@
             </div>
         </div>
     </div>
-    @*  Sign out  *@
-    @*<div class="mt-5 text-center">
-    <button class="btn btn-outline-primary btn-rounded fw-bold px-3 mb-3 mx-1" type="button"
-    v-on:click="signOut()">
-    Sign Out
-    </button>
-    </div>*@
+   
     @*  Order History  *@
     <div class="mb-4 border-bottom mt-5">
         <h4>
@@ -358,26 +352,40 @@
             data: function () {
                 return {
                     customer: null,
+                    tempCustomer: null, // used to store edited customer information while the "edit account info" setion is open
+
                     editInfo: false,
                     editPass: false,
                     errMsg: null,
-                    successMsg: null
+                    successMsg: null,
+
+                    addedAccountInfo: false,
+
+                    oldPswd: null,
+                    newPswd: null,
+                    repeatNewPswd: null
                 }
             },
             methods: {
                 save: function () {
+                    var data = app.tempCustomer;
+                    data.oldPswd = app.oldPswd;
+                    data.newPswd = app.newPswd;
+                    data.repeatNewPswd = app.repeatNewPswd;
+
                     $.ajax({
                         type: "POST",
-                        url: "/myaccount/ajax-save",
+                        url: "/myaccount/ajax-save",   
                         dataType: "json",
-                        data: app.customer,
+                        data: data,
                         success: function (result) {
+                            app.customer = JSON.parse(result.customer); // update the client's customer object to reflect the validated change
                             app.clearPswdVars();
                             app.resetMsgs();
                             app.successMsg = result.msg;
 
-                            if (app.customer.addedAccountInfo == false)
-                                app.customer.addedAccountInfo = true;
+                            if (app.addedAccountInfo == false)
+                                app.addedAccountInfo = true;
                         },
                         error: function (req, status, error) {
                             app.resetMsgs();
@@ -406,23 +414,11 @@
                     });
                 },
                 closeEditInfo: function () {
-                    $.ajax({
-                        type: "POST",
-                        url: "/myaccount/ajax-customer",
-                        dataType: "json",
-                        success: function (result) {
-                            //app.customer = null;
-                            //app.customer = result;
-                            app.editInfo = false;
-                            app.editPass = false;
-                            app.clearPswdVars();
-                            app.resetMsgs();
-                            // scroll to the top of the page
-                            //$('html, body').animate({ scrollTop: 0 }, 'fast');
-                        },
-                        error: function (req, status, error) {
-                        }
-                    });
+                    app.editInfo = false;
+                    app.editPass = false;
+                    app.clearPswdVars();
+                    app.resetMsgs();
+                    app.tempCustomer = JSON.parse(JSON.stringify(app.customer)); // discard any unsaved changes to the temp customer
                 },
                 resetMsgs: function () {
                     app.customer.InputErrors = [];
@@ -430,20 +426,17 @@
                     app.successMsg = null;
                 },
                 clearPswdVars: function () {
-                    app.customer.oldPswd = null;
-                    app.customer.newPswd = null;
-                    app.customer.repeatNewPswd = null;
+                    app.oldPswd = null;
+                    app.newPswd = null;
+                    app.repeatNewPswd = null;
                 },
             },
             created() {
                 if ($('#json').attr('data-json') != "") {
                     this.customer = JSON.parse($('#json').attr('data-json'));
-                    this.customer.oldPswd = null;
-                    this.customer.newPswd = null;
-                    this.customer.repeatNewPswd = null;
-                    this.customer.addedAccountInfo = false;
+                    this.tempCustomer = JSON.parse(JSON.stringify(this.customer)); // defensive
                     if (this.customer.First != "")
-                        this.customer.addedAccountInfo = true;
+                        this.addedAccountInfo = true;
                 }
             }
         };

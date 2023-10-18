@@ -3,6 +3,7 @@ using MyApp.App.Biz;
 using MyApp.App.ErrorHandling;
 using MyApp.Models;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace MyApp.Controllers
 {
@@ -16,7 +17,6 @@ namespace MyApp.Controllers
             // if no order is in session 
             if (HttpContext.Session.GetString("order") == null) {
                 // set an initialized order as json in session
-                order = new Order();
                 HttpContext.Session.SetString("order", order.Serialize());
             } else { // get the order from session
                 orderJson = HttpContext.Session.GetString("order");
@@ -144,7 +144,7 @@ namespace MyApp.Controllers
             customer.CustomerId = int.Parse(data["CustomerId"]);
 
             if (data["First"] != null)
-                customer.First = data["First"]; 
+                customer.First = data["First"];
             if (data["Last"] != null)
                 customer.Last = data["Last"];
             if (data["Email"] != null)
@@ -185,7 +185,7 @@ namespace MyApp.Controllers
             }
             string orderJson;
             Order order;
-            // if order is in session associate customer with order
+            // update the customer info associated with session variables
             if (HttpContext.Session.GetString("order") != null) {
                 orderJson = HttpContext.Session.GetString("order");
                 order = new Order();
@@ -193,19 +193,13 @@ namespace MyApp.Controllers
             } else {
                 order = new Order();
             }
-            // add customer to the order
+            // add updated customer to order
             orderJson = order.AddCustomerInfo(customer);
             // add updated order to session
             HttpContext.Session.SetString("order", orderJson);
-            // add customer to session
+            // add updated customer to session
             HttpContext.Session.SetString("customer", customer.Serialize());
-            return Json(new { msg = "Account updated successfully" });
-        }
-        [HttpPost, Route("/myaccount/ajax-customer")]
-        public ActionResult GetCustomerInfo() {
-            string json = HttpContext.Session.GetString("customer");
-            Customer customer = JsonSerializer.Deserialize<Customer>(json);
-            return Json(new { customer });
+            return Json(new { customer = customer.Serialize(), msg = "Account updated successfully" });
         }
 
         [HttpPost, Route("/myaccount/ajax-sign-out")]
