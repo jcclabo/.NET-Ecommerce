@@ -23,6 +23,7 @@ namespace MyApp.App.Biz
         public string City { get; set; }
         public string State { get; set; }
         public string Zip { get; set; }
+        [JsonIgnore]
         public string HashedPswd { get; private set; }
         public DateTime InsWhen { get; set; } 
         public DateTime? UpdWhen { get; set; }
@@ -147,6 +148,7 @@ namespace MyApp.App.Biz
             return error;
         }
 
+        // Customers are inserted with only an email address and password (stored as a cryptographically strong hash)
         private bool ValidateInsert(string plainTextPswd, string repeatPlainPswd) {
             string errorInit = "Please make the following changes:\r\n";
             string error = errorInit;
@@ -328,22 +330,17 @@ namespace MyApp.App.Biz
         /// <summary>
         /// Excludes hashed password value
         /// </summary>
-        /// <returns> json string </returns>
         public string Serialize() {
             Customer customer = this;
-            customer.HashedPswd = "";
             return JsonSerializer.Serialize(customer);
         }
 
         /// <summary>
-        /// Excludes hashed password value
+        /// Excludes hashed password
         /// </summary>
-        /// <param name="json"></param>
-        /// <returns></returns>
         public Customer Deserialize(string json) {
             Customer customer = JsonSerializer.Deserialize<Customer>(json);
             if (customer != null) {
-                customer.HashedPswd = "";
                 return customer;
             }
             throw new AppException("json string resolved to null");
@@ -352,74 +349,77 @@ namespace MyApp.App.Biz
 
         // quadratic worst case // needs improvement
         public List<Product> GetCustomizedProductList() {
-            // find most similar customer based purchases
+            // find the most similar customer based on purchases
             // iterate through all logged in purchases 
             List<OrderLine> allLines = OrderLine.GetList();
             List<OrderLine> myLines = allLines.FindAll(l => l.CustomerId == CustomerId);
             List<Product> products = Product.GetActiveList();
 
-            if (myLines.Count > 0) {
-                allLines = allLines.OrderByDescending(l => l.CustomerId).ToList();
-
-                OrderLine[] lines = allLines.ToArray();
-                int i = 0;
-
-                int mostSimilar = lines[i].CustomerId; // customer id 
-                int greatestCount = 0; // of same products purchased
-
-                int currCustomerId = lines[i].CustomerId;
-
-                // compare to every other customers purchases
-                while (currCustomerId > 0) {
-                    int count = 0; // current number of same products purchased
-
-                    while (currCustomerId == lines[i].CustomerId) {
-                        // do not compare against this customer
-                        if (currCustomerId != this.CustomerId) {
-                            if (myLines.Exists(l => l.ProductId == lines[i].ProductId)) { 
-                                count++; // problem: if a customer purchased the same product as the signed in customer on multiple different orders it will double count the product...
-                            }
-                        }
-                        i++;
-                    }
-                    if (count > greatestCount) {
-                        greatestCount = count;
-                        mostSimilar = currCustomerId;
-                    }
-                    currCustomerId = lines[i].CustomerId; // update current
-                    if (greatestCount == myLines.Count)
-                        break;
-                }
-
-                List<OrderLine> mostSimilarList = allLines.FindAll(l => l.CustomerId == mostSimilar);
-                List<OrderLine> activeSimilarList = new List<OrderLine>(mostSimilarList);
-
-                // don't include inactive products in list from simiilar customer
-                foreach (OrderLine line in mostSimilarList) {
-                    if (!products.Any(p => p.ProductId == line.ProductId)) {
-                        activeSimilarList.Remove(line);
-                    }
-                }
-
-                // move non purchased products (bought by the similar customer) to the top of the list
-                // and purchased prods in the middle with less relevant prods at the bottom
-
-                List<int> orderByTop = new List<int>();
-
-                foreach (OrderLine other in activeSimilarList) {
-                    if (!myLines.Any(l => l.ProductId == other.ProductId)) {
-                        orderByTop.Add(other.ProductId);
-                    }
-                }
-                int[] orderByTopArray = orderByTop.ToArray();
-
-                for (int t = 0; t < orderByTopArray.Length; t++) {
-                    var e = products.Single(x => x.ProductId == orderByTopArray[t]);
-                    products.Remove(e);
-                    products.Insert(0, e);
-                }
-
+            if (myLines.Count == 0) {
+                // The signed in customer has not made any purchases
+                return products;
             }
+
+            allLines = allLines.OrderByDescending(l => l.CustomerId).ToList();
+
+            OrderLine[] lines = allLines.ToArray();
+            int i = 0;
+
+            int mostSimilar = lines[i].CustomerId; // customer id 
+            int greatestCount = 0; // of same products purchased
+
+            int currCustomerId = lines[i].CustomerId;
+
+            // compare to every other customers purchases
+            while (currCustomerId > 0) {
+                int count = 0; // current number of same products purchased
+
+                while (currCustomerId == lines[i].CustomerId) {
+                    // do not compare against this customer
+                    if (currCustomerId != this.CustomerId) {
+                        if (myLines.Exists(l => l.ProductId == lines[i].ProductId)) { // .Exists preforms a linear search
+                            count++; // problem: if a customer purchased the same product as the signed in customer on multiple different orders it will double count the product...
+                        }
+                    }
+                    i++;
+                }
+                if (count > greatestCount) {
+                    greatestCount = count;
+                    mostSimilar = currCustomerId;
+                }
+                currCustomerId = lines[i].CustomerId; // update current
+                if (greatestCount == myLines.Count)
+                    break;
+            }
+
+            List<OrderLine> mostSimilarList = allLines.FindAll(l => l.CustomerId == mostSimilar);
+            List<OrderLine> activeSimilarList = new List<OrderLine>(mostSimilarList);
+
+            // don't include inactive products in list from simiilar customer
+            foreach (OrderLine line in mostSimilarList) {
+                if (!products.Any(p => p.ProductId == line.ProductId)) {
+                    activeSimilarList.Remove(line);
+                }
+            }
+
+            // move non purchased products (bought by the similar customer) to the top of the list
+            // and purchased products in the middle with less relevant products at the bottom
+
+            List<int> orderByTop = new List<int>();
+
+            foreach (OrderLine other in activeSimilarList) {
+                if (!myLines.Any(l => l.ProductId == other.ProductId)) {
+                    orderByTop.Add(other.ProductId);
+                }
+            }
+            int[] orderByTopArray = orderByTop.ToArray();
+
+            for (int t = 0; t < orderByTopArray.Length; t++) {
+                var e = products.Single(x => x.ProductId == orderByTopArray[t]);
+                products.Remove(e);
+                products.Insert(0, e);
+            }
+
             return products;
         }
 

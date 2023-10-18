@@ -120,7 +120,7 @@
                 @*  Shipping Type Selection  *@
                 <div class="mb-4 border-bottom">
                     <div class="form-check mb-4">
-                        <input class="form-check-input" type="radio" name="shippingType" value="free" v-on:click="expressShip = false" checked/>
+                        <input class="form-check-input" type="radio" name="shippingType" value="free" v-on:click="expressShip = false" checked />
                         <label class="form-check-label">
                             <span>
                                 <p class="mb-0">Standard home delivery</p>
@@ -156,13 +156,13 @@
                 </div>
                 <div class="d-flex justify-content-between border-bottom pb-2 mb-4">
                     <p>Shipping</p>
-                    <p v-if="expressShip">$10.00</p>
+                    <p v-if="expressShip" v-text="toCurrency(@Model.ExpressShippingCost)"></p>
                     <p v-else>Free</p>
                 </div>
                 <div class="d-flex justify-content-between">
                     <p class="h5 mb-5">Order Total</p>
                     <p class="h5 mb-5" v-if="expressShip"
-                       v-text="toCurrency(order.Total + 10)"></p>
+                       v-text="toCurrency(order.Total + @Model.ExpressShippingCost)"></p>
                     <p class="h5 mb-5" v-else
                        v-text="toCurrency(order.Total)"></p>
                 </div>
@@ -208,12 +208,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="small">
-                    @*<p class="text-muted mb-4">Our returns are free and easy. If something isn't quite right, you have 14 days to send it back to us. Read more in our <a class="#!">return and refund policy</a>.</p>*@
-                    @*<p class="text-warning mb-4">FREE SHIPPING AVAILABLE FOR A LIMITED TIME</p>*@
-                    <p class="text-muted mb-0">In accordance with our <a href="">Privacy Policy</a>, if you are signed in to your store account, we will share personal data from your account for order checkout and payment purposes.</p>
-                </div>
             </div>
         </div>
     </div>
@@ -233,26 +227,28 @@
 
 
 @section Scripts {
-    @*<script src="https://js.braintreegateway.com/web/dropin/1.36.1/js/dropin.min.js" 
-            onerror="alert('Error to load payment processing service:<br/>You may encounter this issue if you are using a VPN')">
-    </script>*@
-    <script>
+    <script> 
         var pageMixin = {
             data: function () {
                 return {
                     order: null,
-                    paymentInputError: null,
+                    expressShip: false,
                     braintreeLoadFail: false,
-                    expressShip: false
+                    paymentInputError: null,
+                    paymentMethodNonce: null,
                 }
             },
             methods: {
-                insOrder: function() {
+                insOrder: function () {
+                    var data = app.order;
+                    data.expressShip = app.expressShip;
+                    data.paymentMethodNonce = app.paymentMethodNonce;
+
                     $.ajax({
                         type: "POST",
                         url: "/checkout/ajax-ins-order",
                         dataType: "json",
-                        data: app.order,
+                        data: data,
                         success: function (result) {
                             window.location.href = "checkout/thank-you";
                         },
@@ -268,8 +264,6 @@
             created() {
                 if ($('#jOrder').attr('data-json') != "") {
                     this.order = JSON.parse($('#jOrder').attr('data-json'));
-                    this.order.paymentMethodNonce = null;
-                    this.order.expressShip = false;
                 }
             }
         };
@@ -297,19 +291,16 @@
                                 app.paymentInputError = "A valid payment method is needed to process your order";
                                 return;
                             }
-                            // Add the nonce to the form and submit
-                            //document.querySelector('#nonce').value = payload.nonce;
-                            //form.submit();
 
                             // Add the nonce to the order and make the ajax request
-                            app.order.paymentMethodNonce = payload.nonce;
-                            app.order.expressShip = app.expressShip;
+                            app.paymentMethodNonce = payload.nonce;
                             app.insOrder();
                         });
                     });
                 });
             }).fail(function () {
                 app.braintreeLoadFail = true;
+                // an error message is shown reactively
             });
         });
     </script>

@@ -6,7 +6,7 @@ namespace MyApp.Models
     {
         public string Json { get; set; } = "";
 
-        public string customerId { get; set; } = "";
+        public string CustomerId { get; set; } = "";
 
     }
 

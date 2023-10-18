@@ -36,7 +36,6 @@ namespace MyApp.App.Biz
         public List<OrderLine> Lines { get; set; }
         public string Error { get; private set; }
         public string[] InputErrors { get; private set; }
-        private const int requiredPlusHeader = 7 + 1; // defines InputErrors size
         // Braintree
         public string TransactionErrors;
         public Transaction Transaction { get; private set; }
@@ -59,8 +58,7 @@ namespace MyApp.App.Biz
             OrderDate = DateTime.MinValue;
             Lines = new List<OrderLine>();
             Error = "";
-            InputErrors = new string[requiredPlusHeader];
-            IgnoreDataMemberAttribute nonce = new IgnoreDataMemberAttribute();
+            InputErrors = new string[0];
         }
 
         public static Order GetById(int id, bool getLines) {
@@ -69,8 +67,8 @@ namespace MyApp.App.Biz
 
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             sqlCmd.Parameters.Add("@orderId", SqlDbType.Int).Value = id;
-
             SqlDataReader reader = sqlCmd.ExecuteReader();
+
             Order order = new Order();
             order.OrderId = id;
             int index = 0;
@@ -92,12 +90,16 @@ namespace MyApp.App.Biz
                 order.OrderDate = reader.GetDateTime(index++);
                 order.TransactionId = reader.GetString(index++);
                 order.paymentMethodNonce = reader.GetString(index++);
+
                 if (getLines)
                     order.Lines = OrderLine.GetList(order.OrderId);
+
                 return order;
+
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
-                return new Order() { Error = "Unable to find order in the database", OrderId = id }; ;
+                return new Order() { Error = "Unable to find order in the database", OrderId = id };
+
             } finally {
                 UseSql.Close(conn, sqlCmd, reader);
             }
@@ -171,23 +173,31 @@ namespace MyApp.App.Biz
             sqlCmd.Parameters.Add("@paymentMethodNonce", SqlDbType.VarChar).Value = paymentMethodNonce;
 
             try {
-                OrderId = (int)sqlCmd.ExecuteScalar(); // insert order and return order id
+                // insert order and return order id
+                OrderId = (int)sqlCmd.ExecuteScalar(); 
+
                 // insert order lines
                 foreach (OrderLine line in Lines) {
                     line.OrderId = OrderId;
                     bool success = line.Insert(conn, transaction);
-                    if (!success) { // should you delete a partially inserted order when an orderLine fails to be inserted?
+
+                    if (!success) { 
+                        // an order line failed to be inserted after the order was inserted
                         Error = "Unable to insert an order line";
+                        transaction.Rollback();
                         return false; // atleast log the order line which failed
                     }
                 }
+
                 transaction.Commit();
                 return true;
+
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
                 Error = "Unable to insert order into the database";
                 transaction.Rollback();
                 return false;
+
             } finally {
                 UseSql.Close(conn, sqlCmd);
             }
@@ -198,9 +208,11 @@ namespace MyApp.App.Biz
         /// </summary>
         public static List<Order> GetList() {
             string sql = @"SELECT orderId, customerId, first, last, email, phone, adrL1, adrL2, city, state, zip, subtotal, shipping, total, orderDate, transactionId FROM orders";
+            
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             SqlDataReader? reader = null;
             List<Order> orders = new List<Order>();
+
             try {
                 reader = sqlCmd.ExecuteReader();
                 while (reader.Read()) {
@@ -225,28 +237,26 @@ namespace MyApp.App.Biz
                     orders.Add(order);
                 }
                 return orders;
+
             } finally {
                 UseSql.Close(conn, sqlCmd, reader);
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="customerId"></param>
-        /// <param name="getLines"></param>
-        /// <returns></returns>
         public static List<Order> GetList(int customerId, bool getLines) {
             string sql = @"SELECT orderId, customerId, first, last, email, phone, adrL1, adrL2, city, state, zip, subtotal, shipping, total, orderDate, transactionId " +
                 "FROM orders WHERE customerId=@customerId";
+
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             sqlCmd.Parameters.Add("@customerId", SqlDbType.Int).Value = customerId;
             SqlDataReader? reader = null;
             List<Order> orders = new List<Order>();
+
             try {
                 reader = sqlCmd.ExecuteReader();
                 while (reader.Read()) {
                     Order order = new Order();
+
                     int index = 0;
                     order.OrderId = reader.GetInt32(index++);
                     order.CustomerId = reader.GetInt32(index++);
@@ -264,11 +274,14 @@ namespace MyApp.App.Biz
                     order.Total = reader.GetDecimal(index++);
                     order.OrderDate = reader.GetDateTime(index++);
                     order.TransactionId = reader.GetString(index++);
+
                     if (getLines)
                         order.Lines = OrderLine.GetList(order.OrderId); // probably slower than one call to orderlines with a where clause and sorting/pairing orderlines to each order
+                    
                     orders.Add(order);
                 }
                 return orders;
+
             } finally {
                 UseSql.Close(conn, sqlCmd, reader);
             }
@@ -292,57 +305,60 @@ namespace MyApp.App.Biz
         public string AddToCart(int productId, int customerId) {
             Product prod = new Product();
             prod = prod.GetById(productId);
-            if (Lines.Find(ol => ol.ProductId == productId) != null) {
-                OrderLine line = Lines.Find(o => o.ProductId == prod.ProductId);
+
+            OrderLine line = Lines.Find(o => o.ProductId == prod.ProductId);
+
+            if (line != null) {
                 line.Qty++;
+
             } else {
-                OrderLine line = new OrderLine();
+                line = new OrderLine();
                 line.CustomerId = customerId;
                 line.ProductId = productId;
                 line.Name = prod.Name;
                 line.UnitPrice = prod.Price;
                 line.Descr = prod.Descr;
                 line.Qty = 1;
-                line.ImgUrl = prod.ImgUrl; 
+                line.ImgUrl = prod.ImgUrl;
                 Lines.Add(line);
             }
+
             return Serialize();
         }
 
         public string RmvLine(int productId) {
-            Product prod = new Product();
-            prod = prod.GetById(productId);
-            if (Lines.Find(ol => ol.ProductId == productId) != null) {
-                OrderLine line = Lines.Find(ol => ol.ProductId == productId);
-                Lines.Remove(line);
-            }
+            int index = Lines.FindIndex(ol => ol.ProductId == productId);
+
+            if (index >= 0)
+                Lines.RemoveAt(index);
+
             return Serialize();
         }
 
         public string QtyPlus(int productId) {
-            Product prod = new Product();
-            prod = prod.GetById(productId);
-            if (Lines.Find(ol => ol.ProductId == productId) != null) {
-                OrderLine line = Lines.Find(ol => ol.ProductId == productId);
+            OrderLine line = Lines.Find(ol => ol.ProductId == productId);
+
+            if (line != null)
                 line.Qty++;
-            }
+
             return Serialize();
         }
 
         public string QtyMinus(int productId) {
-            Product prod = new Product();
-            prod = prod.GetById(productId);
-            if (Lines.Find(ol => ol.ProductId == productId) != null) {
-                OrderLine line = Lines.Find(ol => ol.ProductId == productId);
+            OrderLine line = Lines.Find(ol => ol.ProductId == productId);
+
+            if (line != null) {
                 line.Qty--;
-                if (line.Qty == 0)
+                if (line.Qty == 0) {
                     Lines.Remove(line);
+                }
             }
+
             return Serialize();
         }
 
         private void CalcTotalsDb() {
-            decimal initTotal = Total;
+            decimal initTotal = Subtotal + Shipping;
             Subtotal = 0;
             if (Lines.Count != 0) {
                 foreach (OrderLine line in Lines) {
@@ -352,7 +368,9 @@ namespace MyApp.App.Biz
                 }
             }
             Total = Subtotal + Shipping;
-            if (initTotal != Total) throw new AppException("invalid initial order total");
+
+            if (initTotal != Total) 
+                throw new AppException("Invalid inital order total");
         }
 
         private void CalcTotals() {
@@ -368,17 +386,14 @@ namespace MyApp.App.Biz
         /// <summary>
         /// Calculates totals before serializing to json
         /// </summary>
-        /// <returns> json string </returns>
         public string Serialize() {
             CalcTotals();
             return JsonSerializer.Serialize(this);
         }
 
         /// <summary>
-        /// Recalulcates totals from Db
+        /// Recalulcates totals before deserializing
         /// </summary>
-        /// <param name="json"></param>
-        /// <returns></returns>
         public Order Deserialize(string json) {
             Order order = JsonSerializer.Deserialize<Order>(json);
             if (order != null) {

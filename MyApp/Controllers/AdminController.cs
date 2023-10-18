@@ -143,7 +143,7 @@ namespace MyApp.Controllers
             List<Order> orders;
             if (customerId != null) {
                 orders = Order.GetList((int)customerId, false);
-                model.customerId = customerId.ToString();
+                model.CustomerId = customerId.ToString();
             } else {
                 orders = Order.GetList();
             }
