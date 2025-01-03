@@ -9,6 +9,7 @@ using Braintree;
 using System.Reflection;
 using System.Text.Json.Serialization;
 using System.Globalization;
+using System;
 
 namespace MyApp.App.Biz
 {
@@ -98,6 +99,7 @@ namespace MyApp.App.Biz
 
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
+
                 return new Order() { Error = "Unable to find order in the database", OrderId = id };
 
             } finally {
@@ -129,23 +131,27 @@ namespace MyApp.App.Biz
 
             if (error != errorInit) {
                 InputErrors = error.Split("\r\n", StringSplitOptions.RemoveEmptyEntries);
+
                 return false;
             }
+
             return true;
         }
 
         public bool Insert() {
             // ensure order total is correct by using database product prices 
-            CalcTotalsDb();
+            CalcTotals();
 
             // validate form input
-            if (!ValidFormEntries())
+            if (ValidFormEntries() == false) {
                 return false;
+            }
 
             // facilitate PayPal transaction via the Braintree server SDK
             bool transactionSuccess = CreateTransaction();
-            if(!transactionSuccess) 
+            if(transactionSuccess == false) {
                 return false;
+            }
 
             // insert into database if successful
 
@@ -181,21 +187,24 @@ namespace MyApp.App.Biz
                     line.OrderId = OrderId;
                     bool success = line.Insert(conn, transaction);
 
-                    if (!success) { 
+                    if (success == false) { 
                         // an order line failed to be inserted after the order was inserted
                         Error = "Unable to insert an order line";
                         transaction.Rollback();
-                        return false; // atleast log the order line which failed
+
+                        return false; // todo: atleast log the order line which failed
                     }
                 }
 
                 transaction.Commit();
+
                 return true;
 
             } catch (Exception ex) {
                 Console.WriteLine(ex.ToString());
                 Error = "Unable to insert order into the database";
                 transaction.Rollback();
+
                 return false;
 
             } finally {
@@ -210,7 +219,7 @@ namespace MyApp.App.Biz
             string sql = @"SELECT orderId, customerId, first, last, email, phone, adrL1, adrL2, city, state, zip, subtotal, shipping, total, orderDate, transactionId FROM orders";
             
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
-            SqlDataReader? reader = null;
+            SqlDataReader reader = null;
             List<Order> orders = new List<Order>();
 
             try {
@@ -236,6 +245,7 @@ namespace MyApp.App.Biz
                     order.TransactionId = reader.GetString(index++);
                     orders.Add(order);
                 }
+
                 return orders;
 
             } finally {
@@ -249,7 +259,7 @@ namespace MyApp.App.Biz
 
             (SqlConnection conn, SqlCommand sqlCmd) = UseSql.ConnAndCmd(sql);
             sqlCmd.Parameters.Add("@customerId", SqlDbType.Int).Value = customerId;
-            SqlDataReader? reader = null;
+            SqlDataReader reader = null;
             List<Order> orders = new List<Order>();
 
             try {
@@ -275,8 +285,9 @@ namespace MyApp.App.Biz
                     order.OrderDate = reader.GetDateTime(index++);
                     order.TransactionId = reader.GetString(index++);
 
-                    if (getLines)
+                    if (getLines) {
                         order.Lines = OrderLine.GetList(order.OrderId); // probably slower than one call to orderlines with a where clause and sorting/pairing orderlines to each order
+                    }  
                     
                     orders.Add(order);
                 }
@@ -326,15 +337,6 @@ namespace MyApp.App.Biz
             return Serialize();
         }
 
-        public string RmvLine(int productId) {
-            int index = Lines.FindIndex(ol => ol.ProductId == productId);
-
-            if (index >= 0)
-                Lines.RemoveAt(index);
-
-            return Serialize();
-        }
-
         public string QtyPlus(int productId) {
             OrderLine line = Lines.Find(ol => ol.ProductId == productId);
 
@@ -355,22 +357,6 @@ namespace MyApp.App.Biz
             }
 
             return Serialize();
-        }
-
-        private void CalcTotalsDb() {
-            decimal initTotal = Subtotal + Shipping;
-            Subtotal = 0;
-            if (Lines.Count != 0) {
-                foreach (OrderLine line in Lines) {
-                    Product prod = new Product();
-                    prod = prod.GetById(line.ProductId);
-                    Subtotal += (prod.Price * line.Qty);
-                }
-            }
-            Total = Subtotal + Shipping;
-
-            if (initTotal != Total) 
-                throw new AppException("Invalid inital order total");
         }
 
         private void CalcTotals() {
@@ -460,18 +446,76 @@ namespace MyApp.App.Biz
 
             Result<Transaction> result = gateway.Transaction.Sale(request);
             if (result.IsSuccess()) {
+                // success
                 Transaction = result.Target;
                 TransactionId = Transaction.Id;
                 return true;
             } else if (result.Transaction != null) {
+                // soft decline // pending status
+
+                // Category 1: Do not retry
+                //      [2044, 2047, 2019, 2007, 2009, 2108, 2015, 2017, 2018]
+                // Category 2: Issuer Cannot Approve At this Time (Reattempt Allowed); limit retries to 15 retries over a rolling 30 day period
+                //      [2026, 2038, 2001, 2014, 2002, 2057, 2003, 2101, 2107, 2038*, 2046, 2020, 3000]
+                // Category 3: Limit retries to 15 retries over a rolling 30 day period
+                //      [2004, 2007, 2102, 2010, 2101, 2103, 2038*]
+                // Category 4: Limit retries to 15 retries over a rolling 30 day period
+                //      [2000]
+
+                // 2000 - Do Not Honor -
+                //      The customer's bank is unwilling to accept the transaction.
+
+                // 2001 - Insufficient Funds -
+                //      The account did not have sufficient funds to cover the transaction amount at the time of the transaction
+
+                // 2002 - Limit Exceeded -
+                //      The attempted transaction exceeds the withdrawal limit of the account.
+
+                // 2003 - Cardholder's Activity Limit Exceeded -
+                //      The attempted transaction exceeds the activity limit of the account.
+
+                // 2016 - Duplicate Transaction
+                //      The submitted transaction appears to be a duplicate of a previously submitted transaction and was declined
+                //      to prevent charging the same card twice for the same service.
+
+                // 2025 -> 2030 - Set Up Error
+
+
+                // other
+
+                // hard decline
+
+                // 2004 - Expired Card -
+                // Do not retry the transaction
+
+                // 2005 - Invalid Credit Card Number - 
+                // Do not retry the transaction
+
+                // 2006 - Invalid Expiraion Date -
+
+                // 2007 - No Account -
+                //      The submitted card number is not on file with the card-issuing bank.
+
+                // 2008 - Card Account Length Error - 
+                //      The submitted card number does not include the proper number of digits.
+
+                // 2009 - No Such Issuer -
+                //      This decline code could indicate that the submitted card number does not correlate to an existing
+                //      card-issuing bank or that there is a connectivity error with the issuer.
+
+                // 2010 - Card Issuer Declined CVV -
+                //      The customer entered in an invalid security code or made a typo in their card information.
+
+
                 TransactionId = result.Transaction.Id;
                 return true;
             } else {
+                // There was a problem processing your credit card; please double check your payment information and try again.
                 TransactionErrors = "";
                 foreach (ValidationError error in result.Errors.DeepAll()) {
                     TransactionErrors += "Error: " + (int)error.Code + " - " + error.Message + "\n";
-                }
-                return false;
+                } 
+                return false;  
             }
         }
 

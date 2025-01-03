@@ -15,11 +15,10 @@ namespace MyApp.Controllers
         [HttpGet, Route("/cart")]
         public ActionResult Cart() {
             OrderViewModel model = new OrderViewModel();
+
             string jsonOrder = HttpContext.Session.GetString("order");
-
-            if (jsonOrder != null) { // an order is in session 
+            if (jsonOrder != null) { 
                 model.JsonOrder = jsonOrder;
-
             } else {
                 // add a new order to session
                 Order order = new Order();
@@ -33,67 +32,48 @@ namespace MyApp.Controllers
         [HttpPost, Route("/cart/ajax-add")]
         public ActionResult AddToCart(Dictionary<string, string> data) {
             Order order = new Order();
-            string json = HttpContext.Session.GetString("order");
 
-            // get order from session
-            if (json != null) {
-                // set order object to order from session
-                order = order.Deserialize(json);
-
-            } else throw new AppException("Error processing order string from session");
+            string jsonOrder = HttpContext.Session.GetString("order");
+            if (jsonOrder != null) {
+                order = order.Deserialize(jsonOrder);
+            } else {
+                throw new AppException("Error processing order string from session");
+            }
 
             // get customerId from session
             int customerId = 0;
-            string custJson = HttpContext.Session.GetString("customer");
-            if (custJson != null) {
+            string jsonCustomer = HttpContext.Session.GetString("customer");
+
+            if (jsonCustomer != null) {
                 Customer customer = new Customer();
-                customer = customer.Deserialize(custJson);
+                customer = customer.Deserialize(jsonCustomer);
                 customerId = customer.CustomerId;
             }
 
             int productId = int.Parse(data["productId"]);
-            json = order.AddToCart(productId, customerId);
-            HttpContext.Session.SetString("order", json);
+            jsonOrder = order.AddToCart(productId, customerId);
+            HttpContext.Session.SetString("order", jsonOrder);
 
             return Json(new { msg = "Product added successfully" });
-        }
-
-        [HttpPost, Route("/cart/ajax-rmv-line")]
-        public ActionResult RmvLine(Dictionary<string, string> data) {
-            Order order = new Order();
-            string json = HttpContext.Session.GetString("order");
-
-            // get order from session
-            if (json != null) {
-                // set order object to order from session
-                order = order.Deserialize(json);
-
-            } else throw new AppException("Error processing order string from session");
-
-            int productId = int.Parse(data["productId"]);
-            json = order.RmvLine(productId);
-            HttpContext.Session.SetString("order", json);
-
-            return Json(json);
         }
 
         [HttpPost, Route("/cart/ajax-qty-plus")]
         public ActionResult QtyPlus(Dictionary<string, string> data) {
             Order order = new Order();
-            string json = HttpContext.Session.GetString("order");
+            string jsonOrder = HttpContext.Session.GetString("order");
 
             // get order from session
-            if (json != null) {
-                // set order object to order from session
-                order = order.Deserialize(json);
-
-            } else throw new AppException("Error processing order string from session");
+            if (jsonOrder != null) {
+                order = order.Deserialize(jsonOrder);
+            } else {
+                throw new AppException("Error processing order string from session");
+            }
 
             int productId = int.Parse(data["productId"]);
-            json = order.QtyPlus(productId);
-            HttpContext.Session.SetString("order", json);
+            jsonOrder = order.QtyPlus(productId);
+            HttpContext.Session.SetString("order", jsonOrder);
 
-            return Json(json);
+            return Json(jsonOrder);
         }
 
         [HttpPost, Route("/cart/ajax-qty-minus")]
@@ -103,10 +83,10 @@ namespace MyApp.Controllers
 
             // get order from session
             if (json != null) {
-                // set order object to order from session
                 order = order.Deserialize(json);
-
-            } else throw new AppException("Error processing order string from session");
+            } else {
+                throw new AppException("Error processing order string from session");
+            }
 
             int productId = int.Parse(data["productId"]);
             json = order.QtyMinus(productId);

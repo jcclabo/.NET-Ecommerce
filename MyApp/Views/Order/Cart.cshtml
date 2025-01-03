@@ -3,7 +3,33 @@
     ViewData["Title"] = "Cart";
 }
 <div class="container">
-    <div class="row" v-if="order.Lines[0] != null">
+    <div class="row" v-if="order.Lines[0] == null">
+        @*  empty cart  *@
+        <div class="alert text-center pt-5 pb-5" role="alert" data-mdb-color="secondary">
+
+            <h2 class="m-3">
+                Your cart is empty
+            </h2>
+
+            <p class="mb-7 fs-6">
+                Head to the home page to add items.
+            </p>
+            @*  cart icon *@
+            <svg class="mb-9 bi bi-cart-x-fill" width="120" height="120" fill="currentColor" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
+                <path d="M.5 1a.5.5 0 0 0 0 1h1.11l.401 1.607 1.498 7.985A.5.5 0 0 0 4 12h1a2 2 0 1 0 0 4 2 2 0 0 0 0-4h7a2 2 0 1 0 0 4 2 2 0 0 0 0-4h1a.5.5 0 0 0 .491-.408l1.5-8A.5.5 0 0 0 14.5 3H2.89l-.405-1.621A.5.5 0 0 0 2 1zM6 14a1 1 0 1 1-2 0 1 1 0 0 1 2 0m7 0a1 1 0 1 1-2 0 1 1 0 0 1 2 0M7.354 5.646 8.5 6.793l1.146-1.147a.5.5 0 0 1 .708.708L9.207 7.5l1.147 1.146a.5.5 0 0 1-.708.708L8.5 8.207 7.354 9.354a.5.5 0 1 1-.708-.708L7.793 7.5 6.646 6.354a.5.5 0 1 1 .708-.708" />
+            </svg>
+
+            <a href="/" class="d-block fs- text-center text-nowrap mb-5">
+                <button type="button" class="btn btn-primary py-2 px-5"
+                        onclick="">
+                    Home
+                </button>
+            </a>
+
+        </div>
+    </div>
+    <div v-else>
+        @* cart is not empty -> display it *@
 
         <div class="col-lg-8 mb-4 mb-md-0">
             @*  Product list  *@
@@ -50,7 +76,7 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         @*  Line Total col *@
                         <div class="col-sm-2 col-5">
                             <div class="d-flex justify-content-end me-2">
@@ -58,7 +84,7 @@
                             </div>
                             @*  Qty   *@
                             <div class="">
-                                <div class="d-flex justify-content-end">
+                                <div class="d-flex justify-content-end mb-3">
                                     <a class="me-2" v-on:click="shwQtyBtns=false" v-if="shwQtyBtns && shwQtyBtnsKey == line.ProductId">
                                         Hide
                                     </a>
@@ -70,18 +96,23 @@
                                     </p>
                                 </div>
                                 <div class="d-flex justify-content-end" v-if="shwQtyBtns && shwQtyBtnsKey == line.ProductId">
-                                    <button class="btn btn-secondary text-primary rounded-3 border-0 me-2 p-2" v-on:click="qtyMinus(line.ProductId)">
+                                    <button class="btn btn-outline-danger text-nowrap rounded-3 border-1 me-5 p-1" v-if="!shwMinusBtnDark" 
+                                            v-on:mouseover="shwMinusBtnDark = true">
                                         <b>- 1</b>
                                     </button>
-                                    <button class="btn btn-secondary text-primary rounded-3 border-0 p-2" v-on:click="qtyPlus(line.ProductId)">
+                                    <button class="btn btn-danger text-nowrap rounded-3 border-1 me-5 p-2" v-on:click="qtyMinus(line.ProductId)" v-else
+                                            v-on:mouseleave="shwMinusBtnDark = false">
+                                        <b>- 1</b>
+                                    </button>
+                                    <button class="btn btn-outline-success text-nowrap rounded-3 border-1 p-1" v-if="!shwPlusBtnDark" 
+                                            v-on:mouseover="shwPlusBtnDark = true">
+                                        <b>+ 1</b>
+                                    </button>
+                                    <button class="btn btn-success text-nowrap rounded-3 border-1 p-2" v-on:click="qtyPlus(line.ProductId)" v-else
+                                            v-on:mouseleave="shwPlusBtnDark = false">
                                         <b>+ 1</b>
                                     </button>
                                 </div>
-                                <p class="d-flex justify-content-end mb-2 me-2" v-else>
-                                    <button class="btn btn-tertiary text-primary rounded-3 p-0 " v-on:click="rmvLine(line.ProductId)">
-                                        <small class="text-nowrap"><i class="fas fa-trash me-2"></i>Remove</small>
-                                    </button>
-                                </p>
                             </div>
                         </div>
                     </div>
@@ -122,16 +153,6 @@
             </div>
         </div>
     </div>
-    <div v-else>
-        <a class="h-100" href="/">
-            <div class="alert" role="alert" data-mdb-color="primary">
-                <h4 class="alert-heading mb-4 mt-1">Your cart is empty</h4>
-                <p class="mb-2">
-                    Add products to your cart <span class="fw-bold link-unstyled">here</span>
-                </p>
-            </div>
-        </a>
-    </div>
 
     <span id="jOrder" class="d-none" data-json='@Model.JsonOrder'></span>
 </div>
@@ -145,29 +166,12 @@
                 return {
                     order: null,
                     shwQtyBtns: false,
-                    shwQtyBtnsKey: null
+                    shwQtyBtnsKey: null,
+                    shwMinusBtnDark: false,
+                    shwPlusBtnDark: false
                 }
             }, 
             methods: {
-                rmvLine: function (productId) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/cart/ajax-rmv-line",
-                        dataType: "json",
-                        data: { "productId": productId },
-                        success: function (result) {
-                            var lineRmv = app.order.Lines.find(obj => {
-                                return obj.ProductId == productId;
-                            });
-                            app.subtractFromCartCount(lineRmv.Qty);
-                            app.setOrderFromJson(result);
-                        },
-                        error: function (req, status, error) {
-                            alert("error");
-                            console.log(status);
-                        }
-                    });
-                },
                 qtyPlus: function (productId) {
                     $.ajax({
                         type: "POST",
