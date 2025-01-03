@@ -96,20 +96,10 @@
                                     </p>
                                 </div>
                                 <div class="d-flex justify-content-end" v-if="shwQtyBtns && shwQtyBtnsKey == line.ProductId">
-                                    <button class="btn btn-outline-danger text-nowrap rounded-3 border-1 me-5 p-1" v-if="!shwMinusBtnDark" 
-                                            v-on:mouseover="shwMinusBtnDark = true">
+                                    <button class="btn btn-outline-danger text-nowrap rounded-3 border-1 me-5 p-1">
                                         <b>- 1</b>
                                     </button>
-                                    <button class="btn btn-danger text-nowrap rounded-3 border-1 me-5 p-2" v-on:click="qtyMinus(line.ProductId)" v-else
-                                            v-on:mouseleave="shwMinusBtnDark = false">
-                                        <b>- 1</b>
-                                    </button>
-                                    <button class="btn btn-outline-success text-nowrap rounded-3 border-1 p-1" v-if="!shwPlusBtnDark" 
-                                            v-on:mouseover="shwPlusBtnDark = true">
-                                        <b>+ 1</b>
-                                    </button>
-                                    <button class="btn btn-success text-nowrap rounded-3 border-1 p-2" v-on:click="qtyPlus(line.ProductId)" v-else
-                                            v-on:mouseleave="shwPlusBtnDark = false">
+                                    <button class="btn btn-outline-success text-nowrap rounded-3 border-1 p-1">
                                         <b>+ 1</b>
                                     </button>
                                 </div>
@@ -166,9 +156,7 @@
                 return {
                     order: null,
                     shwQtyBtns: false,
-                    shwQtyBtnsKey: null,
-                    shwMinusBtnDark: false,
-                    shwPlusBtnDark: false
+                    shwQtyBtnsKey: null
                 }
             }, 
             methods: {
