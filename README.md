@@ -34,6 +34,5 @@ This application supports guests, registered customers, and admins, providing pe
 - Session management handled securely using .NET Core session state to maintain shopping cart data and user sessions.
 
 ## Highlights & Impact
-- Real-world experience with .NET, ADO.NET, and SQL Server.
 - Implemented a recommendation algorithm to dynamically prioritize products for returning customers based on purchase similarity.
-- Previously hosted publicly on SmarterASP.NET.
+- Hosted publicly with SmarterASP.NET.
